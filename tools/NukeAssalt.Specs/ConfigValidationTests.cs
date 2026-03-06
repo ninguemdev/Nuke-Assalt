@@ -1,4 +1,5 @@
 using NukeAssalt.Tools.Config;
+using System.Collections.Generic;
 
 namespace NukeAssalt.Specs;
 
@@ -15,6 +16,7 @@ public sealed class ConfigValidationTests
         Assert.Equal("economy-default", bundle.Economy.Id);
         Assert.Equal("catalog-beta-skeleton", bundle.Catalog.Id);
         Assert.Equal("silo-7-greybox", bundle.Map.Id);
+        Assert.Equal("combat-default", bundle.Combat.Id);
         Assert.Equal("runtime-default", bundle.Runtime.Id);
         Assert.Equal("network-default", bundle.Network.Id);
     }
@@ -35,6 +37,7 @@ public sealed class ConfigValidationTests
             bundle.Economy.Id,
             bundle.Catalog.Id,
             bundle.Map.Id,
+            bundle.Combat.Id,
             bundle.Runtime.Id,
             bundle.Network.Id,
         }.Concat(allItems.Select(item => item.Id)).ToArray();
@@ -45,6 +48,7 @@ public sealed class ConfigValidationTests
             bundle.Economy.Name,
             bundle.Catalog.Name,
             bundle.Map.Name,
+            bundle.Combat.Name,
             bundle.Runtime.Name,
             bundle.Network.Name,
         }.Concat(allItems.Select(item => item.Name)).ToArray();
@@ -132,6 +136,64 @@ public sealed class ConfigValidationTests
         Assert.True(bundle.Runtime.FeatureFlags.CreateNetworkRemotesOnBoot);
         Assert.True(bundle.Runtime.FeatureFlags.EnforceServiceContracts);
         Assert.Equal("NukeAssaltRemotes", bundle.Network.RemoteRootName);
+        Assert.Contains("PlayerEliminated", remoteNames);
+        Assert.Contains("MovementStateChanged", remoteNames);
+        Assert.Contains("DebugDamageRequest", remoteNames);
         Assert.Equal(remoteNames.Length, remoteNames.Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [Fact]
+    public void Combat_values_are_valid()
+    {
+        var combat = ConfigLoader.LoadBundle(Path.Combine(_repoRoot, "data", "config")).Combat;
+
+        Assert.True(combat.Health.MaxHealth > 0);
+        Assert.Equal("Torso", combat.HitZones.DefaultZone);
+        Assert.True(combat.HitZones.Multipliers.Head > combat.HitZones.Multipliers.Torso);
+        Assert.True(combat.HitZones.Multipliers.Torso > combat.HitZones.Multipliers.Legs);
+        Assert.True(combat.Movement.CrouchSpeed < combat.Movement.WalkSpeed);
+        Assert.True(combat.Movement.WalkSpeed < combat.Movement.SprintSpeed);
+        Assert.True(combat.Movement.CrouchAccuracyMultiplier < 1.0);
+        Assert.True(combat.Movement.MoveAccuracyMultiplier >= 1.0);
+        Assert.True(combat.Movement.SprintAccuracyMultiplier >= combat.Movement.MoveAccuracyMultiplier);
+        Assert.True(combat.Movement.JumpAccuracyMultiplier >= combat.Movement.SprintAccuracyMultiplier);
+        Assert.Equal("R15", combat.Avatar.ExpectedRigType);
+        Assert.True(combat.Avatar.StripAccessories);
+        Assert.False(combat.Avatar.StripCharacterMeshes);
+        Assert.False(combat.Avatar.ShowLocalBodyInFirstPerson);
+        Assert.True(combat.Avatar.ShowOnlyArmsInFirstPerson);
+        Assert.True(combat.Avatar.HideHeadInFirstPerson);
+        Assert.False(combat.Avatar.LoadCharacterAppearance);
+        Assert.Equal(
+            new[] { "face", "shirt", "pants", "graphicTShirt", "bodyColors" },
+            combat.Avatar.PreserveAppearanceFields);
+        Assert.Equal("PlaceholderOutfit", combat.Avatar.StudioFallbackAppearance.Mode);
+        Assert.True(combat.Avatar.StudioFallbackAppearance.Face > 0);
+        Assert.Equal("standard-r15", combat.Animation.ProfileId);
+        Assert.True(combat.Animation.BlendTimeSeconds > 0);
+        Assert.True(combat.Animation.CrouchTrackSpeed < combat.Animation.WalkTrackSpeed);
+        Assert.True(combat.Animation.RunTrackSpeed >= combat.Animation.WalkTrackSpeed);
+        Assert.True(combat.Animation.Tracks.Idle > 0);
+        Assert.True(combat.Animation.Tracks.Walk > 0);
+        Assert.True(combat.Animation.Tracks.Run > 0);
+        Assert.True(combat.Animation.Tracks.Jump > 0);
+        Assert.True(combat.Animation.Tracks.Fall > 0);
+        Assert.True(combat.Animation.Tracks.Crouch > 0);
+        Assert.Equal(
+            6,
+            new HashSet<long>
+            {
+                combat.Animation.Tracks.Idle,
+                combat.Animation.Tracks.Walk,
+                combat.Animation.Tracks.Run,
+                combat.Animation.Tracks.Jump,
+                combat.Animation.Tracks.Fall,
+                combat.Animation.Tracks.Crouch,
+            }.Count);
+        Assert.True(combat.Debug.DefaultDamage > 0);
+        Assert.NotEmpty(combat.HitZones.Aliases.Head);
+        Assert.NotEmpty(combat.HitZones.Aliases.Torso);
+        Assert.NotEmpty(combat.HitZones.Aliases.Arms);
+        Assert.NotEmpty(combat.HitZones.Aliases.Legs);
     }
 }

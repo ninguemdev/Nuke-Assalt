@@ -40,6 +40,16 @@ return {
             ["channel"] = "Stats",
             ["scope"] = "Targeted",
         },
+        {
+            ["name"] = "PlayerEliminated",
+            ["channel"] = "Combat",
+            ["scope"] = "Broadcast",
+        },
+        {
+            ["name"] = "MovementStateChanged",
+            ["channel"] = "Movement",
+            ["scope"] = "ClientToServer",
+        },
     },
     ["functions"] = {
         {
@@ -55,6 +65,11 @@ return {
         {
             ["name"] = "ObjectiveActionRequest",
             ["channel"] = "Objective",
+            ["scope"] = "ClientToServer",
+        },
+        {
+            ["name"] = "DebugDamageRequest",
+            ["channel"] = "Combat",
             ["scope"] = "ClientToServer",
         },
     },

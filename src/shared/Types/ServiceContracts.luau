@@ -29,6 +29,29 @@ local ServiceContracts = {
 			"GetStateSnapshot",
 		},
 	},
+	AvatarService = {
+		name = "AvatarService",
+		methods = {
+			"GetAvatarConfig",
+			"GetAnimationConfig",
+			"BuildSpawnDescription",
+			"BindPlayerCharacter",
+			"BindMovementRemote",
+			"LoadStandardCharacter",
+			"UpdateMovementState",
+		},
+	},
+	DamageService = {
+		name = "DamageService",
+		methods = {
+			"GetCombatConfig",
+			"GetHitZoneMultiplier",
+			"ResolveHitZone",
+			"ApplyHumanoidDamage",
+			"BindPlayerCharacter",
+			"BindDebugRemote",
+		},
+	},
 	MatchService = {
 		name = "MatchService",
 		methods = { "GetConfig", "GetStateSnapshot" },

@@ -4,8 +4,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local Logger = require(ReplicatedStorage.Shared.Util.Logger)
+local AvatarService = require(script.Parent.Parent.Services.AvatarService)
 local ConfigSnapshotService = require(script.Parent.Parent.Services.ConfigSnapshotService)
 local DebugStateService = require(script.Parent.Parent.Services.DebugStateService)
+local DamageService = require(script.Parent.Parent.Services.DamageService)
 local EconomyService = require(script.Parent.Parent.Services.EconomyService)
 local EquipmentService = require(script.Parent.Parent.Services.EquipmentService)
 local InventoryService = require(script.Parent.Parent.Services.InventoryService)
@@ -33,6 +35,8 @@ function ServerAppBootstrap.StartServerApp()
 	serviceRegistry:Register("ConfigSnapshotService", configSnapshotService)
 	local remoteRegistryService = serviceRegistry:Register("RemoteRegistryService", RemoteRegistryService.new())
 	local mapService = serviceRegistry:Register("MapService", MapService.new(configSnapshotService))
+	local avatarService = serviceRegistry:Register("AvatarService", AvatarService.new(configSnapshotService, remoteRegistryService))
+	local damageService = serviceRegistry:Register("DamageService", DamageService.new(configSnapshotService, remoteRegistryService))
 	local matchService = serviceRegistry:Register("MatchService", MatchService.new(configSnapshotService))
 	local roundService = serviceRegistry:Register("RoundService", RoundService.new(configSnapshotService))
 	serviceRegistry:Register("EconomyService", EconomyService.new(configSnapshotService))
@@ -44,21 +48,24 @@ function ServerAppBootstrap.StartServerApp()
 	serviceRegistry:Register("EquipmentService", EquipmentService.new(configSnapshotService))
 	serviceRegistry:Register("StatsService", StatsService.new())
 	local debugStateService = serviceRegistry:Register("DebugStateService", DebugStateService.new(configSnapshotService, serviceRegistry, remoteRegistryService))
+	avatarService:BindMovementRemote()
+	damageService:BindDebugRemote()
 	mapService:EnsureMapWorkspace()
 	debugStateService:Publish(nil, nil, mapService:GetStateSnapshot())
 	local spawnService = SpawnService.new(mapService)
-	local matchCoordinatorService = MatchCoordinatorService.new(matchService, roundService, spawnService, debugStateService, remoteRegistryService)
+	local matchCoordinatorService = MatchCoordinatorService.new(matchService, roundService, spawnService, avatarService, debugStateService, remoteRegistryService)
 	matchCoordinatorService:Start()
 
 	local snapshot = configSnapshotService:GetSnapshot()
 	Logger.info(
 		"ServerBootstrap",
 		string.format(
-			"Loaded config bundle: match=%s economy=%s catalog=%s map=%s runtime=%s network=%s",
+			"Loaded config bundle: match=%s economy=%s catalog=%s map=%s combat=%s runtime=%s network=%s",
 			snapshot.match.id,
 			snapshot.economy.id,
 			snapshot.catalog.id,
 			snapshot.map.id,
+			snapshot.combat.id,
 			snapshot.runtime.id,
 			snapshot.network.id
 		)

@@ -25,6 +25,7 @@ public sealed class GeneratorTests
                 new[]
                 {
                     "CatalogConfig.luau",
+                    "CombatConfig.luau",
                     "EconomyConfig.luau",
                     "MapConfig.luau",
                     "MatchConfig.luau",

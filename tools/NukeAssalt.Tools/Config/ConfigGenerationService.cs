@@ -12,6 +12,7 @@ public static class ConfigGenerationService
             ["EconomyConfig.luau"] = LuauModuleWriter.BuildModule(bundle.Economy),
             ["CatalogConfig.luau"] = LuauModuleWriter.BuildModule(bundle.Catalog),
             ["MapConfig.luau"] = LuauModuleWriter.BuildModule(bundle.Map),
+            ["CombatConfig.luau"] = LuauModuleWriter.BuildModule(bundle.Combat),
             ["RuntimeConfig.luau"] = LuauModuleWriter.BuildModule(bundle.Runtime),
             ["NetworkConfig.luau"] = LuauModuleWriter.BuildModule(bundle.Network),
         };

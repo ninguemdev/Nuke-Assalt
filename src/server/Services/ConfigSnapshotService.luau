@@ -13,6 +13,7 @@ function ConfigSnapshotService.new()
 			economy = Config.GetEconomyConfig(),
 			catalog = Config.GetCatalogConfig(),
 			map = Config.GetMapConfig(),
+			combat = Config.GetCombatConfig(),
 			runtime = Config.GetRuntimeConfig(),
 			network = Config.GetNetworkConfig(),
 		},

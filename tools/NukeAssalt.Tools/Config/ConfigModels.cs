@@ -5,6 +5,7 @@ public sealed record ConfigBundle(
     EconomyConfigDocument Economy,
     CatalogConfigDocument Catalog,
     MapConfigDocument Map,
+    CombatConfigDocument Combat,
     RuntimeConfigDocument Runtime,
     NetworkConfigDocument Network);
 
@@ -189,3 +190,102 @@ public sealed record MapGeometryDefinition(
     string Material,
     double Transparency,
     bool CanCollide);
+
+public sealed record CombatConfigDocument(
+    string Id,
+    string Name,
+    CombatHealth Health,
+    CombatHitZones HitZones,
+    CombatMovement Movement,
+    CombatAvatar Avatar,
+    CombatAnimation Animation,
+    CombatDebug Debug);
+
+public sealed record CombatHealth(
+    double MaxHealth,
+    bool AllowFriendlyFire);
+
+public sealed record CombatHitZones(
+    string DefaultZone,
+    CombatHitZoneAliases Aliases,
+    CombatHitZoneMultipliers Multipliers);
+
+public sealed record CombatHitZoneAliases(
+    IReadOnlyList<string> Head,
+    IReadOnlyList<string> Torso,
+    IReadOnlyList<string> Arms,
+    IReadOnlyList<string> Legs);
+
+public sealed record CombatHitZoneMultipliers(
+    double Head,
+    double Torso,
+    double Arms,
+    double Legs);
+
+public sealed record CombatMovement(
+    double WalkSpeed,
+    double SprintSpeed,
+    double CrouchSpeed,
+    double JumpPower,
+    double CrouchCameraOffsetY,
+    double FirstPersonMinZoom,
+    double FirstPersonMaxZoom,
+    double MoveAccuracyMultiplier,
+    double SprintAccuracyMultiplier,
+    double CrouchAccuracyMultiplier,
+    double JumpAccuracyMultiplier);
+
+public sealed record CombatAvatar(
+    string ExpectedRigType,
+    bool LoadCharacterAppearance,
+    bool StripAccessories,
+    bool StripCharacterMeshes,
+    bool ShowLocalBodyInFirstPerson,
+    bool ShowOnlyArmsInFirstPerson,
+    bool HideHeadInFirstPerson,
+    IReadOnlyList<string> PreserveAppearanceFields,
+    CombatStudioFallbackAppearance StudioFallbackAppearance);
+
+public sealed record CombatStudioFallbackAppearance(
+    string Mode,
+    long Face,
+    long Shirt,
+    long Pants,
+    long GraphicTShirt,
+    CombatStudioFallbackBodyColors BodyColors);
+
+public sealed record CombatStudioFallbackBodyColors(
+    MapColor3 Head,
+    MapColor3 Torso,
+    MapColor3 LeftArm,
+    MapColor3 RightArm,
+    MapColor3 LeftLeg,
+    MapColor3 RightLeg);
+
+public sealed record CombatAnimation(
+    string ProfileId,
+    double BlendTimeSeconds,
+    double WalkTrackSpeed,
+    double RunTrackSpeed,
+    double CrouchTrackSpeed,
+    CombatAnimationTracks Tracks,
+    CombatCrouchPose CrouchPose);
+
+public sealed record CombatAnimationTracks(
+    long Idle,
+    long Walk,
+    long Run,
+    long Jump,
+    long Fall,
+    long Crouch);
+
+public sealed record CombatCrouchPose(
+    double TorsoOffsetY,
+    double RootPitchDegrees,
+    double NeckPitchDegrees,
+    double ShoulderRollDegrees,
+    double HipPitchDegrees);
+
+public sealed record CombatDebug(
+    bool EnableDebugDamageRemote,
+    double DefaultDamage);

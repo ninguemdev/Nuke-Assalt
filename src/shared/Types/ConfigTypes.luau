@@ -148,6 +148,94 @@ export type MapConfig = {
 	geometry: { MapGeometryDefinition },
 }
 
+export type CombatConfig = {
+	id: string,
+	name: string,
+	health: {
+		maxHealth: number,
+		allowFriendlyFire: boolean,
+	},
+	hitZones: {
+		defaultZone: string,
+		aliases: {
+			head: { string },
+			torso: { string },
+			arms: { string },
+			legs: { string },
+		},
+		multipliers: {
+			head: number,
+			torso: number,
+			arms: number,
+			legs: number,
+		},
+	},
+	movement: {
+		walkSpeed: number,
+		sprintSpeed: number,
+		crouchSpeed: number,
+		jumpPower: number,
+		crouchCameraOffsetY: number,
+		firstPersonMinZoom: number,
+		firstPersonMaxZoom: number,
+		moveAccuracyMultiplier: number,
+		sprintAccuracyMultiplier: number,
+		crouchAccuracyMultiplier: number,
+		jumpAccuracyMultiplier: number,
+	},
+	avatar: {
+		expectedRigType: string,
+		loadCharacterAppearance: boolean,
+		stripAccessories: boolean,
+		stripCharacterMeshes: boolean,
+		showLocalBodyInFirstPerson: boolean,
+		showOnlyArmsInFirstPerson: boolean,
+		hideHeadInFirstPerson: boolean,
+		preserveAppearanceFields: { string },
+		studioFallbackAppearance: {
+			mode: string,
+			face: number,
+			shirt: number,
+			pants: number,
+			graphicTShirt: number,
+			bodyColors: {
+				head: MapColor3,
+				torso: MapColor3,
+				leftArm: MapColor3,
+				rightArm: MapColor3,
+				leftLeg: MapColor3,
+				rightLeg: MapColor3,
+			},
+		},
+	},
+	animation: {
+		profileId: string,
+		blendTimeSeconds: number,
+		walkTrackSpeed: number,
+		runTrackSpeed: number,
+		crouchTrackSpeed: number,
+		tracks: {
+			idle: number,
+			walk: number,
+			run: number,
+			jump: number,
+			fall: number,
+			crouch: number,
+		},
+		crouchPose: {
+			torsoOffsetY: number,
+			rootPitchDegrees: number,
+			neckPitchDegrees: number,
+			shoulderRollDegrees: number,
+			hipPitchDegrees: number,
+		},
+	},
+	debug: {
+		enableDebugDamageRemote: boolean,
+		defaultDamage: number,
+	},
+}
+
 export type RuntimeConfig = {
 	id: string,
 	name: string,

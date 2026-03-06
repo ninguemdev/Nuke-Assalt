@@ -1,0 +1,142 @@
+{
+  "id": "combat-default",
+  "name": "BetaCombatDefaults",
+  "health": {
+    "maxHealth": 100,
+    "allowFriendlyFire": false
+  },
+  "hitZones": {
+    "defaultZone": "Torso",
+    "aliases": {
+      "head": [
+        "Head"
+      ],
+      "torso": [
+        "UpperTorso",
+        "LowerTorso",
+        "Torso",
+        "HumanoidRootPart"
+      ],
+      "arms": [
+        "LeftUpperArm",
+        "LeftLowerArm",
+        "LeftHand",
+        "RightUpperArm",
+        "RightLowerArm",
+        "RightHand",
+        "Left Arm",
+        "Right Arm"
+      ],
+      "legs": [
+        "LeftUpperLeg",
+        "LeftLowerLeg",
+        "LeftFoot",
+        "RightUpperLeg",
+        "RightLowerLeg",
+        "RightFoot",
+        "Left Leg",
+        "Right Leg"
+      ]
+    },
+    "multipliers": {
+      "head": 4.0,
+      "torso": 1.0,
+      "arms": 0.85,
+      "legs": 0.75
+    }
+  },
+  "movement": {
+    "walkSpeed": 10,
+    "sprintSpeed": 16,
+    "crouchSpeed": 6.5,
+    "jumpPower": 40,
+    "crouchCameraOffsetY": -1.2,
+    "firstPersonMinZoom": 0.5,
+    "firstPersonMaxZoom": 0.5,
+    "moveAccuracyMultiplier": 1.35,
+    "sprintAccuracyMultiplier": 1.65,
+    "crouchAccuracyMultiplier": 0.85,
+    "jumpAccuracyMultiplier": 2.0
+  },
+  "avatar": {
+    "expectedRigType": "R15",
+    "loadCharacterAppearance": false,
+    "stripAccessories": true,
+    "stripCharacterMeshes": false,
+    "showLocalBodyInFirstPerson": false,
+    "showOnlyArmsInFirstPerson": true,
+    "hideHeadInFirstPerson": true,
+    "preserveAppearanceFields": [
+      "face",
+      "shirt",
+      "pants",
+      "graphicTShirt",
+      "bodyColors"
+    ],
+    "studioFallbackAppearance": {
+      "mode": "PlaceholderOutfit",
+      "face": 7074764,
+      "shirt": 0,
+      "pants": 0,
+      "graphicTShirt": 0,
+      "bodyColors": {
+        "head": {
+          "r": 226,
+          "g": 188,
+          "b": 158
+        },
+        "torso": {
+          "r": 52,
+          "g": 60,
+          "b": 96
+        },
+        "leftArm": {
+          "r": 226,
+          "g": 188,
+          "b": 158
+        },
+        "rightArm": {
+          "r": 226,
+          "g": 188,
+          "b": 158
+        },
+        "leftLeg": {
+          "r": 36,
+          "g": 36,
+          "b": 36
+        },
+        "rightLeg": {
+          "r": 36,
+          "g": 36,
+          "b": 36
+        }
+      }
+    }
+  },
+  "animation": {
+    "profileId": "standard-r15",
+    "blendTimeSeconds": 0.12,
+    "walkTrackSpeed": 1.0,
+    "runTrackSpeed": 1.3,
+    "crouchTrackSpeed": 0.65,
+    "tracks": {
+      "idle": 507766388,
+      "walk": 507777826,
+      "run": 507767714,
+      "jump": 507765000,
+      "fall": 507767968,
+      "crouch": 2506281703
+    },
+    "crouchPose": {
+      "torsoOffsetY": -0.9,
+      "rootPitchDegrees": 10,
+      "neckPitchDegrees": -6,
+      "shoulderRollDegrees": 12,
+      "hipPitchDegrees": -28
+    }
+  },
+  "debug": {
+    "enableDebugDamageRemote": true,
+    "defaultDamage": 30
+  }
+}

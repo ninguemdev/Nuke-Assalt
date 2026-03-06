@@ -16,6 +16,14 @@
     },
 
     "StarterPlayer": {
+      "$properties": {
+        "AllowCustomAnimations": true,
+        "CameraMode": "LockFirstPerson",
+        "CharacterUseJumpPower": true,
+        "GameSettingsAvatar": "R15",
+        "LoadCharacterAppearance": false,
+        "UserEmotesEnabled": false
+      },
       "StarterPlayerScripts": {
         "Client": {
           "$path": "src/client"

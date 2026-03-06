@@ -26,6 +26,10 @@ local function validateColor3(value: any, label: string)
 	assert(type(value.b) == "number" and value.b >= 0 and value.b <= 255, string.format("%s.b must be between 0 and 255", label))
 end
 
+local function assertBoolean(value: any, label: string)
+	assert(type(value) == "boolean", string.format("%s must be a boolean", label))
+end
+
 local function validateCatalogItems(items: { any }, collectionName: string, seenIds: { [string]: boolean }, seenNames: { [string]: boolean })
 	for _, item in ipairs(items) do
 		assert(type(item) == "table", string.format("%s entries must be tables", collectionName))
@@ -164,13 +168,156 @@ local function validateMapDefinitions(mapConfig: any)
 	end
 end
 
+local function validateCombatDefinitions(combatConfig: any)
+	assertNonEmptyString(combatConfig.id, "combatConfig.id")
+	assertNonEmptyString(combatConfig.name, "combatConfig.name")
+	assert(type(combatConfig.health) == "table", "combatConfig.health must be a table")
+	assert(type(combatConfig.hitZones) == "table", "combatConfig.hitZones must be a table")
+	assert(type(combatConfig.movement) == "table", "combatConfig.movement must be a table")
+	assert(type(combatConfig.avatar) == "table", "combatConfig.avatar must be a table")
+	assert(type(combatConfig.animation) == "table", "combatConfig.animation must be a table")
+	assert(type(combatConfig.debug) == "table", "combatConfig.debug must be a table")
+
+	assertPositiveNumber(combatConfig.health.maxHealth, "combatConfig.health.maxHealth")
+	assert(type(combatConfig.health.allowFriendlyFire) == "boolean", "combatConfig.health.allowFriendlyFire must be a boolean")
+
+	assertNonEmptyString(combatConfig.hitZones.defaultZone, "combatConfig.hitZones.defaultZone")
+	assert(type(combatConfig.hitZones.aliases) == "table", "combatConfig.hitZones.aliases must be a table")
+	assert(type(combatConfig.hitZones.multipliers) == "table", "combatConfig.hitZones.multipliers must be a table")
+	assert(#combatConfig.hitZones.aliases.head > 0, "combatConfig.hitZones.aliases.head must not be empty")
+	assert(#combatConfig.hitZones.aliases.torso > 0, "combatConfig.hitZones.aliases.torso must not be empty")
+	assert(#combatConfig.hitZones.aliases.arms > 0, "combatConfig.hitZones.aliases.arms must not be empty")
+	assert(#combatConfig.hitZones.aliases.legs > 0, "combatConfig.hitZones.aliases.legs must not be empty")
+	assertPositiveNumber(combatConfig.hitZones.multipliers.head, "combatConfig.hitZones.multipliers.head")
+	assertPositiveNumber(combatConfig.hitZones.multipliers.torso, "combatConfig.hitZones.multipliers.torso")
+	assertPositiveNumber(combatConfig.hitZones.multipliers.arms, "combatConfig.hitZones.multipliers.arms")
+	assertPositiveNumber(combatConfig.hitZones.multipliers.legs, "combatConfig.hitZones.multipliers.legs")
+	assert(
+		combatConfig.hitZones.multipliers.head > combatConfig.hitZones.multipliers.torso,
+		"combatConfig.hitZones.multipliers.head must be greater than torso"
+	)
+	assert(
+		combatConfig.hitZones.multipliers.torso > combatConfig.hitZones.multipliers.legs,
+		"combatConfig.hitZones.multipliers.torso must be greater than legs"
+	)
+
+	assertPositiveNumber(combatConfig.movement.walkSpeed, "combatConfig.movement.walkSpeed")
+	assertPositiveNumber(combatConfig.movement.sprintSpeed, "combatConfig.movement.sprintSpeed")
+	assertPositiveNumber(combatConfig.movement.crouchSpeed, "combatConfig.movement.crouchSpeed")
+	assertPositiveNumber(combatConfig.movement.jumpPower, "combatConfig.movement.jumpPower")
+	assert(type(combatConfig.movement.crouchCameraOffsetY) == "number", "combatConfig.movement.crouchCameraOffsetY must be a number")
+	assertPositiveNumber(combatConfig.movement.firstPersonMinZoom, "combatConfig.movement.firstPersonMinZoom")
+	assertPositiveNumber(combatConfig.movement.firstPersonMaxZoom, "combatConfig.movement.firstPersonMaxZoom")
+	assertPositiveNumber(combatConfig.movement.moveAccuracyMultiplier, "combatConfig.movement.moveAccuracyMultiplier")
+	assertPositiveNumber(combatConfig.movement.sprintAccuracyMultiplier, "combatConfig.movement.sprintAccuracyMultiplier")
+	assertPositiveNumber(combatConfig.movement.crouchAccuracyMultiplier, "combatConfig.movement.crouchAccuracyMultiplier")
+	assertPositiveNumber(combatConfig.movement.jumpAccuracyMultiplier, "combatConfig.movement.jumpAccuracyMultiplier")
+	assert(combatConfig.movement.crouchSpeed < combatConfig.movement.walkSpeed, "crouchSpeed must be lower than walkSpeed")
+	assert(combatConfig.movement.walkSpeed < combatConfig.movement.sprintSpeed, "walkSpeed must be lower than sprintSpeed")
+	assert(
+		combatConfig.movement.crouchAccuracyMultiplier < 1,
+		"crouchAccuracyMultiplier should improve accuracy and stay below 1"
+	)
+	assert(combatConfig.movement.moveAccuracyMultiplier >= 1, "moveAccuracyMultiplier must be at least 1")
+	assert(
+		combatConfig.movement.sprintAccuracyMultiplier >= combatConfig.movement.moveAccuracyMultiplier,
+		"sprintAccuracyMultiplier must be at least moveAccuracyMultiplier"
+	)
+	assert(
+		combatConfig.movement.jumpAccuracyMultiplier >= combatConfig.movement.sprintAccuracyMultiplier,
+		"jumpAccuracyMultiplier must be at least sprintAccuracyMultiplier"
+	)
+
+	assertNonEmptyString(combatConfig.avatar.expectedRigType, "combatConfig.avatar.expectedRigType")
+	assertBoolean(combatConfig.avatar.loadCharacterAppearance, "combatConfig.avatar.loadCharacterAppearance")
+	assertBoolean(combatConfig.avatar.stripAccessories, "combatConfig.avatar.stripAccessories")
+	assertBoolean(combatConfig.avatar.stripCharacterMeshes, "combatConfig.avatar.stripCharacterMeshes")
+	assertBoolean(combatConfig.avatar.showLocalBodyInFirstPerson, "combatConfig.avatar.showLocalBodyInFirstPerson")
+	assertBoolean(combatConfig.avatar.showOnlyArmsInFirstPerson, "combatConfig.avatar.showOnlyArmsInFirstPerson")
+	assertBoolean(combatConfig.avatar.hideHeadInFirstPerson, "combatConfig.avatar.hideHeadInFirstPerson")
+	assert(type(combatConfig.avatar.preserveAppearanceFields) == "table", "combatConfig.avatar.preserveAppearanceFields must be a table")
+	assert(type(combatConfig.avatar.studioFallbackAppearance) == "table", "combatConfig.avatar.studioFallbackAppearance must be a table")
+	assert(combatConfig.avatar.expectedRigType == "R15", "combatConfig.avatar.expectedRigType must be R15 for the current beta")
+	assert(not combatConfig.avatar.showLocalBodyInFirstPerson, "combatConfig.avatar.showLocalBodyInFirstPerson must be false when arms-only first person is enabled")
+	assert(combatConfig.avatar.showOnlyArmsInFirstPerson, "combatConfig.avatar.showOnlyArmsInFirstPerson must stay enabled")
+
+	local preserveFieldSet = {
+		face = true,
+		shirt = true,
+		pants = true,
+		graphicTShirt = true,
+		bodyColors = true,
+	}
+	local seenPreserveFields = {}
+	for _, field in ipairs(combatConfig.avatar.preserveAppearanceFields) do
+		assertNonEmptyString(field, "combatConfig.avatar.preserveAppearanceFields")
+		assert(preserveFieldSet[field], string.format("Unsupported preserved appearance field: %s", field))
+		assert(not seenPreserveFields[field], string.format("Duplicate preserved appearance field: %s", field))
+		seenPreserveFields[field] = true
+	end
+
+	for fieldName in pairs(preserveFieldSet) do
+		assert(seenPreserveFields[fieldName], string.format("Missing preserved appearance field: %s", fieldName))
+	end
+
+	assertNonEmptyString(combatConfig.avatar.studioFallbackAppearance.mode, "combatConfig.avatar.studioFallbackAppearance.mode")
+	assertPositiveNumber(combatConfig.avatar.studioFallbackAppearance.face, "combatConfig.avatar.studioFallbackAppearance.face")
+	assertNonNegativeNumber(combatConfig.avatar.studioFallbackAppearance.shirt, "combatConfig.avatar.studioFallbackAppearance.shirt")
+	assertNonNegativeNumber(combatConfig.avatar.studioFallbackAppearance.pants, "combatConfig.avatar.studioFallbackAppearance.pants")
+	assertNonNegativeNumber(combatConfig.avatar.studioFallbackAppearance.graphicTShirt, "combatConfig.avatar.studioFallbackAppearance.graphicTShirt")
+	validateColor3(combatConfig.avatar.studioFallbackAppearance.bodyColors.head, "combatConfig.avatar.studioFallbackAppearance.bodyColors.head")
+	validateColor3(combatConfig.avatar.studioFallbackAppearance.bodyColors.torso, "combatConfig.avatar.studioFallbackAppearance.bodyColors.torso")
+	validateColor3(combatConfig.avatar.studioFallbackAppearance.bodyColors.leftArm, "combatConfig.avatar.studioFallbackAppearance.bodyColors.leftArm")
+	validateColor3(combatConfig.avatar.studioFallbackAppearance.bodyColors.rightArm, "combatConfig.avatar.studioFallbackAppearance.bodyColors.rightArm")
+	validateColor3(combatConfig.avatar.studioFallbackAppearance.bodyColors.leftLeg, "combatConfig.avatar.studioFallbackAppearance.bodyColors.leftLeg")
+	validateColor3(combatConfig.avatar.studioFallbackAppearance.bodyColors.rightLeg, "combatConfig.avatar.studioFallbackAppearance.bodyColors.rightLeg")
+
+	assertNonEmptyString(combatConfig.animation.profileId, "combatConfig.animation.profileId")
+	assertPositiveNumber(combatConfig.animation.blendTimeSeconds, "combatConfig.animation.blendTimeSeconds")
+	assertPositiveNumber(combatConfig.animation.walkTrackSpeed, "combatConfig.animation.walkTrackSpeed")
+	assertPositiveNumber(combatConfig.animation.runTrackSpeed, "combatConfig.animation.runTrackSpeed")
+	assertPositiveNumber(combatConfig.animation.crouchTrackSpeed, "combatConfig.animation.crouchTrackSpeed")
+	assert(type(combatConfig.animation.tracks) == "table", "combatConfig.animation.tracks must be a table")
+	assert(type(combatConfig.animation.crouchPose) == "table", "combatConfig.animation.crouchPose must be a table")
+	assertPositiveNumber(combatConfig.animation.tracks.idle, "combatConfig.animation.tracks.idle")
+	assertPositiveNumber(combatConfig.animation.tracks.walk, "combatConfig.animation.tracks.walk")
+	assertPositiveNumber(combatConfig.animation.tracks.run, "combatConfig.animation.tracks.run")
+	assertPositiveNumber(combatConfig.animation.tracks.jump, "combatConfig.animation.tracks.jump")
+	assertPositiveNumber(combatConfig.animation.tracks.fall, "combatConfig.animation.tracks.fall")
+	assertPositiveNumber(combatConfig.animation.tracks.crouch, "combatConfig.animation.tracks.crouch")
+	assert(type(combatConfig.animation.crouchPose.torsoOffsetY) == "number", "combatConfig.animation.crouchPose.torsoOffsetY must be a number")
+	assert(type(combatConfig.animation.crouchPose.rootPitchDegrees) == "number", "combatConfig.animation.crouchPose.rootPitchDegrees must be a number")
+	assert(type(combatConfig.animation.crouchPose.neckPitchDegrees) == "number", "combatConfig.animation.crouchPose.neckPitchDegrees must be a number")
+	assert(type(combatConfig.animation.crouchPose.shoulderRollDegrees) == "number", "combatConfig.animation.crouchPose.shoulderRollDegrees must be a number")
+	assert(type(combatConfig.animation.crouchPose.hipPitchDegrees) == "number", "combatConfig.animation.crouchPose.hipPitchDegrees must be a number")
+	assert(
+		combatConfig.animation.crouchTrackSpeed < combatConfig.animation.walkTrackSpeed,
+		"combatConfig.animation.crouchTrackSpeed must be below walkTrackSpeed"
+	)
+	assert(
+		combatConfig.animation.runTrackSpeed >= combatConfig.animation.walkTrackSpeed,
+		"combatConfig.animation.runTrackSpeed must be at least walkTrackSpeed"
+	)
+	assert(combatConfig.animation.profileId == "standard-r15", "combatConfig.animation.profileId must be standard-r15")
+
+	local uniqueTrackIds = {}
+	for trackName, trackId in pairs(combatConfig.animation.tracks) do
+		assert(not uniqueTrackIds[trackId], string.format("Duplicate animation asset id detected for %s", trackName))
+		uniqueTrackIds[trackId] = trackName
+	end
+
+	assert(type(combatConfig.debug.enableDebugDamageRemote) == "boolean", "combatConfig.debug.enableDebugDamageRemote must be a boolean")
+	assertPositiveNumber(combatConfig.debug.defaultDamage, "combatConfig.debug.defaultDamage")
+end
+
 local ConfigValidator = {}
 
-function ConfigValidator.Validate(matchConfig: any, economyConfig: any, catalogConfig: any, mapConfig: any, runtimeConfig: any, networkConfig: any)
+function ConfigValidator.Validate(matchConfig: any, economyConfig: any, catalogConfig: any, mapConfig: any, combatConfig: any, runtimeConfig: any, networkConfig: any)
 	assert(type(matchConfig) == "table", "Match config must be a table")
 	assert(type(economyConfig) == "table", "Economy config must be a table")
 	assert(type(catalogConfig) == "table", "Catalog config must be a table")
 	assert(type(mapConfig) == "table", "Map config must be a table")
+	assert(type(combatConfig) == "table", "Combat config must be a table")
 	assert(type(runtimeConfig) == "table", "Runtime config must be a table")
 	assert(type(networkConfig) == "table", "Network config must be a table")
 
@@ -215,6 +362,7 @@ function ConfigValidator.Validate(matchConfig: any, economyConfig: any, catalogC
 	assertPositiveNumber(catalogConfig.loadoutRules.maxDefuseKits, "catalogConfig.loadoutRules.maxDefuseKits")
 
 	validateMapDefinitions(mapConfig)
+	validateCombatDefinitions(combatConfig)
 
 	assertNonEmptyString(runtimeConfig.id, "runtimeConfig.id")
 	assertNonEmptyString(runtimeConfig.name, "runtimeConfig.name")
@@ -239,6 +387,7 @@ function ConfigValidator.Validate(matchConfig: any, economyConfig: any, catalogC
 		[economyConfig.id] = true,
 		[catalogConfig.id] = true,
 		[mapConfig.id] = true,
+		[combatConfig.id] = true,
 		[runtimeConfig.id] = true,
 		[networkConfig.id] = true,
 	}
@@ -247,6 +396,7 @@ function ConfigValidator.Validate(matchConfig: any, economyConfig: any, catalogC
 		[economyConfig.name] = true,
 		[catalogConfig.name] = true,
 		[mapConfig.name] = true,
+		[combatConfig.name] = true,
 		[runtimeConfig.name] = true,
 		[networkConfig.name] = true,
 	}

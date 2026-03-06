@@ -4,15 +4,32 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local Logger = require(ReplicatedStorage.Shared.Util.Logger)
+local FpsController = require(script.Parent.FpsController)
 
 local ClientRuntimeController = {}
 
 function ClientRuntimeController.Start()
 	local matchConfig = Config.GetMatchConfig()
+	local combatConfig = Config.GetCombatConfig()
 	local networkConfig = Config.GetNetworkConfig()
+	FpsController.Start()
 	Logger.info(
 		"ClientRuntimeController",
 		string.format("Client runtime ready for format first-to-%d", matchConfig.format.roundsToWin)
+	)
+	Logger.info(
+		"ClientRuntimeController",
+		string.format("Combat defaults loaded: maxHealth=%d walk=%.1f sprint=%.1f", combatConfig.health.maxHealth, combatConfig.movement.walkSpeed, combatConfig.movement.sprintSpeed)
+	)
+	Logger.info(
+		"ClientRuntimeController",
+		string.format(
+			"Avatar profile active: rig=%s animation=%s armsOnly=%s fallback=%s",
+			combatConfig.avatar.expectedRigType,
+			combatConfig.animation.profileId,
+			tostring(combatConfig.avatar.showOnlyArmsInFirstPerson),
+			combatConfig.avatar.studioFallbackAppearance.mode
+		)
 	)
 	Logger.info(
 		"ClientRuntimeController",
@@ -23,6 +40,7 @@ function ClientRuntimeController.Start()
 	local eventsFolder = remoteRoot:WaitForChild(networkConfig.folders.events)
 	local matchStateChanged = eventsFolder:WaitForChild("MatchStateChanged")
 	local roundStateChanged = eventsFolder:WaitForChild("RoundStateChanged")
+	local playerEliminated = eventsFolder:WaitForChild("PlayerEliminated")
 
 	if matchStateChanged:IsA("RemoteEvent") then
 		matchStateChanged.OnClientEvent:Connect(function(matchState)
@@ -49,6 +67,15 @@ function ClientRuntimeController.Start()
 					roundState.currentRound,
 					math.floor(roundState.timeRemaining)
 				)
+			)
+		end)
+	end
+
+	if playerEliminated:IsA("RemoteEvent") then
+		playerEliminated.OnClientEvent:Connect(function(payload)
+			Logger.info(
+				"ClientRuntimeController",
+				string.format("Player eliminated -> %s via %s", payload.name, payload.hitZone)
 			)
 		end)
 	end

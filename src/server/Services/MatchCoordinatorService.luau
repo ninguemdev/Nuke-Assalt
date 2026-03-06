@@ -9,12 +9,13 @@ local MatchPhase = require(ReplicatedStorage.Shared.Enums.MatchPhase)
 local MatchCoordinatorService = {}
 MatchCoordinatorService.__index = MatchCoordinatorService
 
-function MatchCoordinatorService.new(matchService, roundService, spawnService, debugStateService, remoteRegistryService)
+function MatchCoordinatorService.new(matchService, roundService, spawnService, avatarService, debugStateService, remoteRegistryService)
 	local self = {
 		Name = "MatchCoordinatorService",
 		_matchService = matchService,
 		_roundService = roundService,
 		_spawnService = spawnService,
+		_avatarService = avatarService,
 		_debugStateService = debugStateService,
 		_remoteRegistryService = remoteRegistryService,
 		_running = false,
@@ -60,8 +61,7 @@ function MatchCoordinatorService:_spawnAssignedPlayers()
 	for teamName, players in pairs(assignments) do
 		for _, player in ipairs(players) do
 			if player.Parent == Players then
-				player:LoadCharacter()
-				local character = player.Character or player.CharacterAdded:Wait()
+				local character = self._avatarService:LoadStandardCharacter(player)
 				self._spawnService:MoveCharacterToTeamSpawn(character, teamName)
 			end
 		end
@@ -69,13 +69,22 @@ function MatchCoordinatorService:_spawnAssignedPlayers()
 end
 
 function MatchCoordinatorService:_sendPlayersToLobby(players: { Player })
+	local expectedRigType = self._avatarService:GetAvatarConfig().expectedRigType
+	local expectedRigEnum = if expectedRigType == "R15" then Enum.HumanoidRigType.R15 else Enum.HumanoidRigType.R6
+
 	for _, player in ipairs(players) do
 		if player.Parent == Players then
-			if not player.Character then
-				player:LoadCharacter()
+			local character = player.Character
+			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+			local needsStandardCharacter = character == nil
+				or character:GetAttribute("NukeAssaltExpectedRig") ~= expectedRigType
+				or humanoid == nil
+				or humanoid.RigType ~= expectedRigEnum
+
+			if needsStandardCharacter then
+				character = self._avatarService:LoadStandardCharacter(player)
 			end
 
-			local character = player.Character or player.CharacterAdded:Wait()
 			self._spawnService:MoveCharacterToLobby(character)
 		end
 	end

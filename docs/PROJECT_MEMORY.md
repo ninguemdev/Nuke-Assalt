@@ -15,12 +15,13 @@
 
 ## Proxima etapa prevista
 
-- `Etapa 2 - Loop base de match e round`
+- `Etapa 3 - Mapa greybox Silo-7 e metadados espaciais`
 
 ## Etapas aceitas
 
 - `Etapa 0 - Fundacao tecnica e harness de validacao` validada manualmente no Roblox Studio em 2026-03-06 e aceita pelo usuario.
 - `Etapa 1 - Contratos centrais, configuracao data-driven e rede` aceita pelo usuario para commit e avancar em 2026-03-06.
+- `Etapa 2 - Loop base de match e round` validada manualmente no Roblox Studio e aceita pelo usuario em 2026-03-06.
 
 ## Observacoes importantes
 

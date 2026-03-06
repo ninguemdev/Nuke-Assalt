@@ -9,6 +9,7 @@ export type MatchConfig = {
 	format: {
 		roundsToWin: number,
 		swapAfterRounds: number,
+		minimumPlayersToStart: number,
 	},
 	timers: {
 		buyPhaseSeconds: number,

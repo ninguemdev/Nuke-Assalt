@@ -37,7 +37,7 @@ function DebugStateService.new(configSnapshotService, serviceRegistry, remoteReg
 	return setmetatable(self, DebugStateService)
 end
 
-function DebugStateService:Publish()
+function DebugStateService:Publish(matchState: any?, roundState: any?)
 	local snapshot = self._configSnapshotService:GetSnapshot()
 	local remoteFolder = self._remoteRegistryService:GetRemoteFolder()
 	local services = self._serviceRegistry:GetAll()
@@ -52,6 +52,22 @@ function DebugStateService:Publish()
 	self._runtimeFolder:SetAttribute("ServiceCount", countEntries(services))
 	self._runtimeFolder:SetAttribute("EventCount", remoteFolder:GetAttribute("EventCount"))
 	self._runtimeFolder:SetAttribute("FunctionCount", remoteFolder:GetAttribute("FunctionCount"))
+
+	if matchState then
+		self._runtimeFolder:SetAttribute("MatchPhase", matchState.phase)
+		self._runtimeFolder:SetAttribute("CurrentRound", matchState.roundNumber)
+		self._runtimeFolder:SetAttribute("AttackersScore", matchState.attackersScore)
+		self._runtimeFolder:SetAttribute("DefendersScore", matchState.defendersScore)
+		self._runtimeFolder:SetAttribute("SidesSwapped", matchState.sidesSwapped)
+		self._runtimeFolder:SetAttribute("RoundWinner", matchState.roundWinner)
+		self._runtimeFolder:SetAttribute("RoundReason", matchState.roundReason)
+		self._runtimeFolder:SetAttribute("MatchWinner", matchState.winner)
+	end
+
+	if roundState then
+		self._runtimeFolder:SetAttribute("RoundPhase", roundState.phase)
+		self._runtimeFolder:SetAttribute("RoundTimeRemaining", math.floor(roundState.timeRemaining))
+	end
 end
 
 function DebugStateService:GetRuntimeFolder()

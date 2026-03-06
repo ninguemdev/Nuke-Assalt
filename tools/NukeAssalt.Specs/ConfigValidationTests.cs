@@ -59,6 +59,7 @@ public sealed class ConfigValidationTests
         Assert.True(matchConfig.Timers.PostPlantSeconds > 0);
         Assert.Equal(8, matchConfig.Format.SwapAfterRounds);
         Assert.Equal(9, matchConfig.Format.RoundsToWin);
+        Assert.True(matchConfig.Format.MinimumPlayersToStart >= 2);
     }
 
     [Fact]

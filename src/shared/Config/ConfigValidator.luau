@@ -52,6 +52,7 @@ function ConfigValidator.Validate(matchConfig: any, economyConfig: any, catalogC
 	assert(type(matchConfig.timers) == "table", "matchConfig.timers must be a table")
 	assert(type(matchConfig.format.roundsToWin) == "number", "matchConfig.format.roundsToWin must be a number")
 	assert(type(matchConfig.format.swapAfterRounds) == "number", "matchConfig.format.swapAfterRounds must be a number")
+	assertPositiveNumber(matchConfig.format.minimumPlayersToStart, "matchConfig.format.minimumPlayersToStart")
 	assertPositiveNumber(matchConfig.timers.buyPhaseSeconds, "matchConfig.timers.buyPhaseSeconds")
 	assertPositiveNumber(matchConfig.timers.roundSeconds, "matchConfig.timers.roundSeconds")
 	assertPositiveNumber(matchConfig.timers.postPlantSeconds, "matchConfig.timers.postPlantSeconds")

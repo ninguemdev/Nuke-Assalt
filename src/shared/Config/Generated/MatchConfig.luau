@@ -6,6 +6,7 @@ return {
     ["format"] = {
         ["roundsToWin"] = 9,
         ["swapAfterRounds"] = 8,
+        ["minimumPlayersToStart"] = 2,
     },
     ["timers"] = {
         ["buyPhaseSeconds"] = 15,

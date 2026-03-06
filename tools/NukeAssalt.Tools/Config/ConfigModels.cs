@@ -15,7 +15,8 @@ public sealed record MatchConfigDocument(
 
 public sealed record MatchFormat(
     int RoundsToWin,
-    int SwapAfterRounds);
+    int SwapAfterRounds,
+    int MinimumPlayersToStart);
 
 public sealed record MatchTimers(
     double BuyPhaseSeconds,

@@ -222,13 +222,6 @@ export type CombatConfig = {
 			fall: number,
 			crouch: number,
 		},
-		crouchPose: {
-			torsoOffsetY: number,
-			rootPitchDegrees: number,
-			neckPitchDegrees: number,
-			shoulderRollDegrees: number,
-			hipPitchDegrees: number,
-		},
 	},
 	debug: {
 		enableDebugDamageRemote: boolean,

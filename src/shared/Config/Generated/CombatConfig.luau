@@ -78,8 +78,8 @@ return {
         ["studioFallbackAppearance"] = {
             ["mode"] = "PlaceholderOutfit",
             ["face"] = 7074764,
-            ["shirt"] = 0,
-            ["pants"] = 0,
+            ["shirt"] = 2820432786,
+            ["pants"] = 9365025356,
             ["graphicTShirt"] = 0,
             ["bodyColors"] = {
                 ["head"] = {
@@ -128,13 +128,6 @@ return {
             ["jump"] = 507765000,
             ["fall"] = 507767968,
             ["crouch"] = 2506281703,
-        },
-        ["crouchPose"] = {
-            ["torsoOffsetY"] = -0.9,
-            ["rootPitchDegrees"] = 10,
-            ["neckPitchDegrees"] = -6,
-            ["shoulderRollDegrees"] = 12,
-            ["hipPitchDegrees"] = -28,
         },
     },
     ["debug"] = {

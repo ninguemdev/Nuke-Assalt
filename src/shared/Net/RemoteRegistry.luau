@@ -9,7 +9,11 @@ local networkConfig = Config.GetNetworkConfig()
 local function ensureChild(parent: Instance, className: string, name: string): Instance
 	local existing = parent:FindFirstChild(name)
 	if existing then
-		return existing
+		if existing.ClassName == className then
+			return existing
+		end
+
+		existing:Destroy()
 	end
 
 	local child = Instance.new(className)

@@ -12,6 +12,7 @@ type ActiveCharacterState = {
 	character: Model,
 	humanoid: Humanoid,
 	bodyParts: { BasePart },
+	movementModeConnection: RBXScriptConnection?,
 }
 
 local FpsController = {}
@@ -87,21 +88,17 @@ function FpsController.Start()
 			return
 		end
 
-		local targetSpeed = combatConfig.movement.walkSpeed
-		if crouchHeld then
-			targetSpeed = combatConfig.movement.crouchSpeed
-		elseif sprintHeld and activeState.humanoid.MoveDirection.Magnitude > 0.05 then
-			targetSpeed = combatConfig.movement.sprintSpeed
-		end
-
-		activeState.humanoid.UseJumpPower = true
-		activeState.humanoid.WalkSpeed = targetSpeed
-		activeState.humanoid.JumpPower = combatConfig.movement.jumpPower
-		activeState.humanoid.CameraOffset = Vector3.new(0, if crouchHeld then combatConfig.movement.crouchCameraOffsetY else 0, 0)
+		local movementMode = activeState.character:GetAttribute("NukeAssaltMovementMode")
+		local isCrouching = movementMode == "Crouch"
+		activeState.humanoid.CameraOffset = Vector3.new(0, if isCrouching then combatConfig.movement.crouchCameraOffsetY else 0, 0)
 	end
 
 	local function bindCharacter(character: Model)
 		local humanoid = character:WaitForChild("Humanoid") :: Humanoid
+
+		if activeState and activeState.movementModeConnection then
+			activeState.movementModeConnection:Disconnect()
+		end
 
 		local bodyParts = {}
 		for _, descendant in ipairs(character:GetDescendants()) do
@@ -114,7 +111,12 @@ function FpsController.Start()
 			character = character,
 			humanoid = humanoid,
 			bodyParts = bodyParts,
+			movementModeConnection = nil,
 		}
+
+		activeState.movementModeConnection = character:GetAttributeChangedSignal("NukeAssaltMovementMode"):Connect(function()
+			applyMovementSettings()
+		end)
 
 		sprintHeld = false
 		crouchHeld = false

@@ -382,12 +382,16 @@ function MapService:_indexMapRoot(root: Instance, source: string): (boolean, str
 						end
 					end
 				end
+
+				if #self._plantZones[bombsiteId] == 0 then
+					return false, string.format("Bombsite '%s' must define at least one plant zone", bombsiteId)
+				end
 			end
 		end
 	end
 
-	if next(self._bombsiteRoots) == nil then
-		return false, "Manual map authoring requires at least one bombsite under 'Bombsites'"
+	if countEntries(self._bombsiteRoots) < 2 then
+		return false, "Manual map authoring requires at least two bombsites under 'Bombsites'"
 	end
 
 	local anchorPointsFolder = findContainer(root, "AnchorPoints")

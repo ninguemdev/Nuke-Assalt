@@ -268,8 +268,7 @@ public sealed record CombatAnimation(
     double WalkTrackSpeed,
     double RunTrackSpeed,
     double CrouchTrackSpeed,
-    CombatAnimationTracks Tracks,
-    CombatCrouchPose CrouchPose);
+    CombatAnimationTracks Tracks);
 
 public sealed record CombatAnimationTracks(
     long Idle,
@@ -278,13 +277,6 @@ public sealed record CombatAnimationTracks(
     long Jump,
     long Fall,
     long Crouch);
-
-public sealed record CombatCrouchPose(
-    double TorsoOffsetY,
-    double RootPitchDegrees,
-    double NeckPitchDegrees,
-    double ShoulderRollDegrees,
-    double HipPitchDegrees);
 
 public sealed record CombatDebug(
     bool EnableDebugDamageRemote,

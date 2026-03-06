@@ -46,6 +46,8 @@ public sealed class CombatValidationTests
             new[] { "face", "shirt", "pants", "graphicTShirt", "bodyColors" },
             combat.Avatar.PreserveAppearanceFields);
         Assert.Equal("PlaceholderOutfit", combat.Avatar.StudioFallbackAppearance.Mode);
+        Assert.True(combat.Avatar.StudioFallbackAppearance.Shirt > 0);
+        Assert.True(combat.Avatar.StudioFallbackAppearance.Pants > 0);
         Assert.True(combat.Animation.CrouchTrackSpeed < combat.Animation.WalkTrackSpeed);
         Assert.True(combat.Animation.RunTrackSpeed >= combat.Animation.WalkTrackSpeed);
         Assert.True(combat.Animation.Tracks.Idle > 0);

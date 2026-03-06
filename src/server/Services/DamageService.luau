@@ -2,6 +2,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Logger = require(ReplicatedStorage.Shared.Util.Logger)
 
@@ -172,16 +173,21 @@ function DamageService:BindPlayerCharacter(player: Player)
 end
 
 function DamageService:BindDebugRemote()
-	if not self._config.debug.enableDebugDamageRemote then
-		return
-	end
-
 	local debugDamageRequest = self:_getRemoteFunction("DebugDamageRequest")
 	if not debugDamageRequest then
 		return
 	end
 
+	local debugEnabledInThisSession = self._config.debug.enableDebugDamageRemote and RunService:IsStudio()
+
 	debugDamageRequest.OnServerInvoke = function(player, hitZone, baseDamage)
+		if not debugEnabledInThisSession then
+			return {
+				success = false,
+				reason = if self._config.debug.enableDebugDamageRemote then "DisabledOutsideStudio" else "DebugDisabledInConfig",
+			}
+		end
+
 		local character = player.Character
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 		if not humanoid then

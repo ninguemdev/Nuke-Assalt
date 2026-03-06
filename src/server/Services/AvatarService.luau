@@ -12,33 +12,15 @@ type MovementPayload = {
 	crouchRequested: boolean,
 }
 
-type JointEntry = {
-	motor: Motor6D,
-	baseC0: CFrame,
-}
-
-type JointMap = {
-	[string]: JointEntry,
-}
-
 type CachedDescriptionEntry = {
 	description: HumanoidDescription,
 	appearanceSource: string,
 }
 
-local JOINT_CANDIDATES = {
-	RootJoint = true,
-	Root = true,
-	Waist = true,
-	Neck = true,
-	RightShoulder = true,
-	LeftShoulder = true,
-	RightHip = true,
-	LeftHip = true,
-	["Right Shoulder"] = true,
-	["Left Shoulder"] = true,
-	["Right Hip"] = true,
-	["Left Hip"] = true,
+type AnimationState = {
+	animator: Animator,
+	crouchAnimation: Animation,
+	crouchTrack: AnimationTrack?,
 }
 
 local ACCESSORY_FIELDS = {
@@ -52,12 +34,10 @@ local ACCESSORY_FIELDS = {
 	"WaistAccessory",
 }
 
+local APPEARANCE_RETRY_COOLDOWN_SECONDS = 15
+
 local AvatarService = {}
 AvatarService.__index = AvatarService
-
-local function rad(degrees: number): number
-	return math.rad(degrees)
-end
 
 local function colorFromConfig(colorValue): Color3
 	return Color3.fromRGB(colorValue.r, colorValue.g, colorValue.b)
@@ -65,6 +45,38 @@ end
 
 local function getExpectedRigEnum(expectedRigType: string): Enum.HumanoidRigType
 	return if expectedRigType == "R15" then Enum.HumanoidRigType.R15 else Enum.HumanoidRigType.R6
+end
+
+local function toAssetUri(assetId: number): string
+	return string.format("rbxassetid://%d", assetId)
+end
+
+local function isSyntheticStudioPlayer(player: Player): boolean
+	if not RunService:IsStudio() then
+		return false
+	end
+
+	if player.UserId <= 0 then
+		return true
+	end
+
+	return string.match(player.Name, "^Player%d+$") ~= nil
+end
+
+local function ensureChildOfClass(parent: Instance, className: string, name: string): Instance
+	local existing = parent:FindFirstChild(name)
+	if existing and existing.ClassName == className then
+		return existing
+	end
+
+	if existing then
+		existing:Destroy()
+	end
+
+	local child = Instance.new(className)
+	child.Name = name
+	child.Parent = parent
+	return child
 end
 
 function AvatarService.new(configSnapshotService, remoteRegistryService)
@@ -75,11 +87,12 @@ function AvatarService.new(configSnapshotService, remoteRegistryService)
 		_networkConfig = snapshot.network,
 		_remoteRegistryService = remoteRegistryService,
 		_boundPlayers = {} :: { [Player]: boolean },
-		_jointMaps = {} :: { [Model]: JointMap },
 		_loggedRigWarnings = {} :: { [Player]: boolean },
 		_loggedAppearanceFallbacks = {} :: { [Player]: boolean },
 		_descriptionCache = {} :: { [number]: CachedDescriptionEntry },
+		_retryCooldowns = {} :: { [number]: number },
 		_pendingAppearanceSources = {} :: { [Player]: string },
+		_animationStates = {} :: { [Model]: AnimationState },
 		_placeholderDescription = nil :: HumanoidDescription?,
 	}, AvatarService)
 
@@ -96,6 +109,11 @@ function AvatarService.new(configSnapshotService, remoteRegistryService)
 		self._loggedRigWarnings[player] = nil
 		self._loggedAppearanceFallbacks[player] = nil
 		self._pendingAppearanceSources[player] = nil
+
+		if player.UserId > 0 then
+			self._retryCooldowns[player.UserId] = nil
+			self._descriptionCache[player.UserId] = nil
+		end
 	end)
 
 	return self
@@ -116,39 +134,14 @@ function AvatarService:_getRemoteEvent(name: string)
 	return nil
 end
 
-function AvatarService:_captureJoints(character: Model): JointMap?
-	local jointMap = {} :: JointMap
-
-	for _, descendant in ipairs(character:GetDescendants()) do
-		if descendant:IsA("Motor6D") and JOINT_CANDIDATES[descendant.Name] and jointMap[descendant.Name] == nil then
-			jointMap[descendant.Name] = {
-				motor = descendant,
-				baseC0 = descendant.C0,
-			}
-		end
-	end
-
-	if next(jointMap) == nil then
-		return nil
-	end
-
-	return jointMap
-end
-
 function AvatarService:_sanitizeCharacterAppearance(character: Model)
-	if self._config.avatar.stripAccessories then
-		for _, child in ipairs(character:GetChildren()) do
-			if child:IsA("Accessory") then
-				child:Destroy()
-			end
-		end
+	if not self._config.avatar.stripAccessories then
+		return
 	end
 
-	if self._config.avatar.stripCharacterMeshes then
-		for _, descendant in ipairs(character:GetDescendants()) do
-			if descendant:IsA("CharacterMesh") then
-				descendant:Destroy()
-			end
+	for _, child in ipairs(character:GetChildren()) do
+		if child:IsA("Accessory") then
+			child:Destroy()
 		end
 	end
 end
@@ -268,136 +261,176 @@ function AvatarService:_logAppearanceFallback(player: Player, reason: string)
 
 	self._loggedAppearanceFallbacks[player] = true
 
+	local message = string.format(
+		"Using %s avatar fallback for %s (%s)",
+		self._config.avatar.studioFallbackAppearance.mode,
+		player.Name,
+		reason
+	)
+
 	if RunService:IsStudio() or player.UserId <= 0 then
-		Logger.info(
-			"AvatarService",
-			string.format(
-				"Using %s avatar fallback for %s (%s)",
-				self._config.avatar.studioFallbackAppearance.mode,
-				player.Name,
-				reason
-			)
-		)
+		Logger.info("AvatarService", message)
 	else
-		Logger.warn(
-			"AvatarService",
-			string.format(
-				"Using %s avatar fallback for %s (%s)",
-				self._config.avatar.studioFallbackAppearance.mode,
-				player.Name,
-				reason
-			)
-		)
+		Logger.warn("AvatarService", message)
 	end
 end
 
 function AvatarService:BuildSpawnDescription(player: Player)
-	local cached = if player.UserId > 0 then self._descriptionCache[player.UserId] else nil
+	if isSyntheticStudioPlayer(player) then
+		self:_logAppearanceFallback(player, "SyntheticStudioPlayer")
+		return self:_buildFallbackDescription(), "StudioPlaceholder"
+	end
+
+	local cached = self._descriptionCache[player.UserId]
 	if cached then
 		return cached.description:Clone(), cached.appearanceSource
 	end
 
-	if player.UserId > 0 then
-		local success, result = pcall(function()
-			return Players:GetHumanoidDescriptionFromUserIdAsync(player.UserId)
-		end)
-
-		if success and result and result:IsA("HumanoidDescription") then
-			local standardized = self:_buildStandardizedDescription(result)
-			self._descriptionCache[player.UserId] = {
-				description = standardized:Clone(),
-				appearanceSource = "PlayerAppearance",
-			}
-			return standardized, "PlayerAppearance"
-		end
-
-		self:_logAppearanceFallback(player, "AvatarDescriptionUnavailable")
-	else
-		self:_logAppearanceFallback(player, "SyntheticStudioPlayer")
+	local retryAt = self._retryCooldowns[player.UserId]
+	if retryAt and retryAt > time() then
+		self:_logAppearanceFallback(player, "AvatarDescriptionCooldown")
+		return self:_buildFallbackDescription(), "StudioPlaceholder"
 	end
 
-	local placeholderDescription = self:_buildFallbackDescription()
-	if player.UserId > 0 then
+	local success, result = pcall(function()
+		return Players:GetHumanoidDescriptionFromUserIdAsync(player.UserId)
+	end)
+
+	if success and result and result:IsA("HumanoidDescription") then
+		local standardized = self:_buildStandardizedDescription(result)
 		self._descriptionCache[player.UserId] = {
-			description = placeholderDescription:Clone(),
-			appearanceSource = "StudioPlaceholder",
+			description = standardized:Clone(),
+			appearanceSource = "PlayerAppearance",
 		}
+		self._retryCooldowns[player.UserId] = nil
+		self._loggedAppearanceFallbacks[player] = nil
+		return standardized, "PlayerAppearance"
 	end
 
-	return placeholderDescription, "StudioPlaceholder"
+	self._retryCooldowns[player.UserId] = time() + APPEARANCE_RETRY_COOLDOWN_SECONDS
+	self:_logAppearanceFallback(player, "AvatarDescriptionUnavailable")
+	return self:_buildFallbackDescription(), "StudioPlaceholder"
 end
 
-function AvatarService:_applyCrouchPose(character: Model, isCrouching: boolean)
-	local jointMap = self._jointMaps[character]
-	if not jointMap then
-		jointMap = self:_captureJoints(character)
-		if not jointMap then
-			return
-		end
-
-		self._jointMaps[character] = jointMap
-	end
-
-	local pose = self._config.animation.crouchPose
-
-	local function assign(name: string, targetC0: CFrame)
-		local entry = jointMap[name]
-		if entry then
-			entry.motor.C0 = targetC0
-		end
-	end
-
-	if not isCrouching then
-		for _, entry in pairs(jointMap) do
-			entry.motor.C0 = entry.baseC0
-		end
-
+function AvatarService:_destroyAnimationState(character: Model)
+	local animationState = self._animationStates[character]
+	if not animationState then
 		return
 	end
 
-	local rootJoint = jointMap.RootJoint or jointMap.Root
-	if rootJoint then
-		local rootName = if jointMap.RootJoint then "RootJoint" else "Root"
-		assign(
-			rootName,
-			rootJoint.baseC0
-				* CFrame.new(0, pose.torsoOffsetY, 0)
-				* CFrame.Angles(rad(pose.rootPitchDegrees), 0, 0)
+	if animationState.crouchTrack then
+		pcall(function()
+			animationState.crouchTrack:Stop(0)
+			animationState.crouchTrack:Destroy()
+		end)
+	end
+
+	if animationState.crouchAnimation.Parent then
+		animationState.crouchAnimation:Destroy()
+	end
+
+	self._animationStates[character] = nil
+end
+
+function AvatarService:_ensureAnimationState(character: Model, humanoid: Humanoid): AnimationState
+	local existing = self._animationStates[character]
+	if existing then
+		return existing
+	end
+
+	local animator = humanoid:FindFirstChildOfClass("Animator")
+	if not animator then
+		animator = Instance.new("Animator")
+		animator.Parent = humanoid
+	end
+
+	local crouchAnimation = Instance.new("Animation")
+	crouchAnimation.Name = "NukeAssaltCrouch"
+	crouchAnimation.AnimationId = toAssetUri(self._config.animation.tracks.crouch)
+	crouchAnimation.Parent = animator
+
+	local crouchTrack = nil :: AnimationTrack?
+	local loaded, trackOrError = pcall(function()
+		return animator:LoadAnimation(crouchAnimation)
+	end)
+
+	if loaded and trackOrError then
+		crouchTrack = trackOrError :: AnimationTrack
+		crouchTrack.Priority = Enum.AnimationPriority.Movement
+		crouchTrack.Looped = true
+	else
+		Logger.warn(
+			"AvatarService",
+			string.format("Failed to load crouch animation track '%s'", tostring(trackOrError))
 		)
 	end
 
-	local waist = jointMap.Waist
-	if waist then
-		assign("Waist", waist.baseC0 * CFrame.Angles(rad(pose.rootPitchDegrees * 0.45), 0, 0))
+	local animationState = {
+		animator = animator,
+		crouchAnimation = crouchAnimation,
+		crouchTrack = crouchTrack,
+	}
+
+	self._animationStates[character] = animationState
+
+	character.Destroying:Connect(function()
+		self:_destroyAnimationState(character)
+	end)
+
+	return animationState
+end
+
+function AvatarService:_setCrouchAnimationState(character: Model, isCrouching: boolean)
+	local animationState = self._animationStates[character]
+	if not animationState or not animationState.crouchTrack then
+		return
 	end
 
-	local neck = jointMap.Neck
-	if neck then
-		assign("Neck", neck.baseC0 * CFrame.Angles(rad(pose.neckPitchDegrees), 0, 0))
+	local crouchTrack = animationState.crouchTrack
+	if isCrouching then
+		if not crouchTrack.IsPlaying then
+			crouchTrack:Play(self._config.animation.blendTimeSeconds)
+		end
+
+		crouchTrack:AdjustSpeed(self._config.animation.crouchTrackSpeed)
+	else
+		if crouchTrack.IsPlaying then
+			crouchTrack:Stop(self._config.animation.blendTimeSeconds)
+		end
+	end
+end
+
+function AvatarService:_applyStudioPlaceholderVisuals(character: Model)
+	local fallbackAppearance = self._config.avatar.studioFallbackAppearance
+	local shirt = ensureChildOfClass(character, "Shirt", "PlaceholderShirt") :: Shirt
+	local pants = ensureChildOfClass(character, "Pants", "PlaceholderPants") :: Pants
+
+	shirt.ShirtTemplate = toAssetUri(fallbackAppearance.shirt)
+	pants.PantsTemplate = toAssetUri(fallbackAppearance.pants)
+
+	local graphicTShirt = character:FindFirstChild("PlaceholderGraphic")
+	if fallbackAppearance.graphicTShirt > 0 then
+		local graphic = if graphicTShirt and graphicTShirt:IsA("ShirtGraphic")
+			then (graphicTShirt :: ShirtGraphic)
+			else (ensureChildOfClass(character, "ShirtGraphic", "PlaceholderGraphic") :: ShirtGraphic)
+		graphic.Graphic = toAssetUri(fallbackAppearance.graphicTShirt)
+	elseif graphicTShirt then
+		graphicTShirt:Destroy()
 	end
 
-	local rightShoulder = jointMap.RightShoulder or jointMap["Right Shoulder"]
-	if rightShoulder then
-		local rightShoulderName = if jointMap.RightShoulder then "RightShoulder" else "Right Shoulder"
-		assign(rightShoulderName, rightShoulder.baseC0 * CFrame.Angles(0, 0, rad(-pose.shoulderRollDegrees)))
-	end
+	local head = character:FindFirstChild("Head")
+	if head and head:IsA("BasePart") then
+		for _, child in ipairs(head:GetChildren()) do
+			if child:IsA("Decal") and (child.Name == "PlaceholderFace" or child.Face == Enum.NormalId.Front) then
+				child:Destroy()
+			end
+		end
 
-	local leftShoulder = jointMap.LeftShoulder or jointMap["Left Shoulder"]
-	if leftShoulder then
-		local leftShoulderName = if jointMap.LeftShoulder then "LeftShoulder" else "Left Shoulder"
-		assign(leftShoulderName, leftShoulder.baseC0 * CFrame.Angles(0, 0, rad(pose.shoulderRollDegrees)))
-	end
-
-	local rightHip = jointMap.RightHip or jointMap["Right Hip"]
-	if rightHip then
-		local rightHipName = if jointMap.RightHip then "RightHip" else "Right Hip"
-		assign(rightHipName, rightHip.baseC0 * CFrame.Angles(rad(pose.hipPitchDegrees), 0, 0))
-	end
-
-	local leftHip = jointMap.LeftHip or jointMap["Left Hip"]
-	if leftHip then
-		local leftHipName = if jointMap.LeftHip then "LeftHip" else "Left Hip"
-		assign(leftHipName, leftHip.baseC0 * CFrame.Angles(rad(pose.hipPitchDegrees), 0, 0))
+		local face = Instance.new("Decal")
+		face.Name = "PlaceholderFace"
+		face.Face = Enum.NormalId.Front
+		face.Texture = toAssetUri(fallbackAppearance.face)
+		face.Parent = head
 	end
 end
 
@@ -408,6 +441,7 @@ function AvatarService:_configureCharacter(player: Player, character: Model)
 	local appearanceSource = self._pendingAppearanceSources[player] or (character:GetAttribute("NukeAssaltAppearanceSource") :: string?) or "ExistingCharacter"
 
 	self._pendingAppearanceSources[player] = nil
+	self:_destroyAnimationState(character)
 
 	character:SetAttribute("NukeAssaltExpectedRig", expectedRigType)
 	character:SetAttribute("NukeAssaltAnimationProfile", self._config.animation.profileId)
@@ -415,6 +449,7 @@ function AvatarService:_configureCharacter(player: Player, character: Model)
 	character:SetAttribute("NukeAssaltCrouching", false)
 	character:SetAttribute("NukeAssaltSprinting", false)
 	character:SetAttribute("NukeAssaltMovementMode", MovementMode.Walk)
+
 	humanoid.UseJumpPower = true
 	humanoid.WalkSpeed = self._config.movement.walkSpeed
 	humanoid.JumpPower = self._config.movement.jumpPower
@@ -432,9 +467,13 @@ function AvatarService:_configureCharacter(player: Player, character: Model)
 		)
 	end
 
-	self._jointMaps[character] = self:_captureJoints(character) or {}
 	self:_sanitizeCharacterAppearance(character)
-	self:_applyCrouchPose(character, false)
+	self:_ensureAnimationState(character, humanoid)
+	self:_setCrouchAnimationState(character, false)
+
+	if appearanceSource == "StudioPlaceholder" then
+		self:_applyStudioPlaceholderVisuals(character)
+	end
 end
 
 function AvatarService:GetAvatarConfig()
@@ -480,7 +519,7 @@ function AvatarService:UpdateMovementState(player: Player, sprintRequested: bool
 	character:SetAttribute("NukeAssaltCrouching", shouldCrouch)
 	character:SetAttribute("NukeAssaltSprinting", shouldSprint)
 	character:SetAttribute("NukeAssaltMovementMode", movementMode)
-	self:_applyCrouchPose(character, shouldCrouch)
+	self:_setCrouchAnimationState(character, shouldCrouch)
 
 	return {
 		success = true,
@@ -502,6 +541,9 @@ function AvatarService:BindPlayerCharacter(player: Player)
 
 	player.CharacterAppearanceLoaded:Connect(function(character)
 		self:_sanitizeCharacterAppearance(character)
+		if character:GetAttribute("NukeAssaltAppearanceSource") == "StudioPlaceholder" then
+			self:_applyStudioPlaceholderVisuals(character)
+		end
 	end)
 
 	if player.Character then

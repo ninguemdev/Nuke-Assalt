@@ -3,8 +3,11 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Config = require(ReplicatedStorage.Shared.Config)
 local Logger = require(ReplicatedStorage.Shared.Util.Logger)
 local MatchPhase = require(ReplicatedStorage.Shared.Enums.MatchPhase)
+
+local networkConfig = Config.GetNetworkConfig()
 
 local MatchCoordinatorService = {}
 MatchCoordinatorService.__index = MatchCoordinatorService
@@ -26,7 +29,7 @@ end
 
 function MatchCoordinatorService:_getEvent(name: string)
 	local remoteRoot = self._remoteRegistryService:GetRemoteFolder()
-	local eventsFolder = remoteRoot and remoteRoot:FindFirstChild("Events")
+	local eventsFolder = remoteRoot and remoteRoot:FindFirstChild(networkConfig.folders.events)
 	if not eventsFolder then
 		return nil
 	end

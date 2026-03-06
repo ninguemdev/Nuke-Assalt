@@ -60,6 +60,8 @@ Workspace
   - `Spectators`
 - Cada bombsite precisa ter `BombsiteId`.
 - Cada plant zone precisa ter `PlantZoneId`.
+- O mapa manual precisa ter pelo menos `2` bombsites.
+- Cada bombsite precisa ter pelo menos `1` plant zone.
 
 ## O que o runtime le manualmente hoje
 

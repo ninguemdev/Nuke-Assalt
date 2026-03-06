@@ -18,7 +18,9 @@ public static class ConfigLoader
         return new ConfigBundle(
             LoadDocument<MatchConfigDocument>(Path.Combine(fullInputRoot, "match.json")),
             LoadDocument<EconomyConfigDocument>(Path.Combine(fullInputRoot, "economy.json")),
-            LoadDocument<CatalogConfigDocument>(Path.Combine(fullInputRoot, "catalog.json")));
+            LoadDocument<CatalogConfigDocument>(Path.Combine(fullInputRoot, "catalog.json")),
+            LoadDocument<RuntimeConfigDocument>(Path.Combine(fullInputRoot, "runtime.json")),
+            LoadDocument<NetworkConfigDocument>(Path.Combine(fullInputRoot, "network.json")));
     }
 
     private static T LoadDocument<T>(string path)

@@ -1,12 +1,12 @@
 --!strict
 
-local ItemType = {
+local InventorySlot = {
 	PrimaryWeapon = "PrimaryWeapon",
 	SecondaryWeapon = "SecondaryWeapon",
 	Utility = "Utility",
-	DefenderEquipment = "DefenderEquipment",
+	SpecialEquipment = "SpecialEquipment",
 	DefuseKit = "DefuseKit",
 	Armor = "Armor",
 }
 
-return table.freeze(ItemType)
+return table.freeze(InventorySlot)

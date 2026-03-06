@@ -1,0 +1,24 @@
+{
+  "id": "runtime-default",
+  "name": "BetaRuntimeDefaults",
+  "featureFlags": {
+    "publishRuntimeDebugAttributes": true,
+    "createNetworkRemotesOnBoot": true,
+    "enforceServiceContracts": true
+  },
+  "tuning": {
+    "shop": {
+      "allowPurchaseOnlyDuringBuyPhase": true,
+      "allowDropActions": true,
+      "allowSellback": false
+    },
+    "network": {
+      "replicateStateSnapshots": true,
+      "publishContractVersionAttributes": true
+    },
+    "debug": {
+      "publishConfigAttributes": true,
+      "logBootstrapSummary": true
+    }
+  }
+}

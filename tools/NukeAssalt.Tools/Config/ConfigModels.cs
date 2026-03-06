@@ -3,7 +3,9 @@ namespace NukeAssalt.Tools.Config;
 public sealed record ConfigBundle(
     MatchConfigDocument Match,
     EconomyConfigDocument Economy,
-    CatalogConfigDocument Catalog);
+    CatalogConfigDocument Catalog,
+    RuntimeConfigDocument Runtime,
+    NetworkConfigDocument Network);
 
 public sealed record MatchConfigDocument(
     string Id,
@@ -44,14 +46,72 @@ public sealed record KillRewards(
 public sealed record CatalogConfigDocument(
     string Id,
     string Name,
+    LoadoutRules LoadoutRules,
     IReadOnlyList<CatalogItem> Weapons,
     IReadOnlyList<CatalogItem> Utilities,
     IReadOnlyList<CatalogItem> Equipment);
+
+public sealed record LoadoutRules(
+    int MaxUtilityTotal,
+    int MaxSpecialEquipment,
+    int MaxPrimaryWeapons,
+    int MaxSecondaryWeapons,
+    int MaxArmor,
+    int MaxDefuseKits);
 
 public sealed record CatalogItem(
     string Id,
     string Name,
     string ItemType,
+    string Slot,
     string Team,
     int Cost,
+    string EconomyClass,
     int? MaxPerLoadout = null);
+
+public sealed record RuntimeConfigDocument(
+    string Id,
+    string Name,
+    RuntimeFeatureFlags FeatureFlags,
+    RuntimeTuning Tuning);
+
+public sealed record RuntimeFeatureFlags(
+    bool PublishRuntimeDebugAttributes,
+    bool CreateNetworkRemotesOnBoot,
+    bool EnforceServiceContracts);
+
+public sealed record RuntimeTuning(
+    ShopTuning Shop,
+    NetworkTuning Network,
+    DebugTuning Debug);
+
+public sealed record ShopTuning(
+    bool AllowPurchaseOnlyDuringBuyPhase,
+    bool AllowDropActions,
+    bool AllowSellback);
+
+public sealed record NetworkTuning(
+    bool ReplicateStateSnapshots,
+    bool PublishContractVersionAttributes);
+
+public sealed record DebugTuning(
+    bool PublishConfigAttributes,
+    bool LogBootstrapSummary);
+
+public sealed record NetworkConfigDocument(
+    string Id,
+    string Name,
+    string Version,
+    string RemoteRootName,
+    NetworkFolders Folders,
+    IReadOnlyList<RemoteDefinition> Events,
+    IReadOnlyList<RemoteDefinition> Functions);
+
+public sealed record NetworkFolders(
+    string Events,
+    string Functions);
+
+public sealed record RemoteDefinition(
+    string Name,
+    string Channel,
+    string Scope);

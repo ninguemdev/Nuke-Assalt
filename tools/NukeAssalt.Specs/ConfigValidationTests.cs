@@ -14,6 +14,8 @@ public sealed class ConfigValidationTests
         Assert.Equal("match-default", bundle.Match.Id);
         Assert.Equal("economy-default", bundle.Economy.Id);
         Assert.Equal("catalog-beta-skeleton", bundle.Catalog.Id);
+        Assert.Equal("runtime-default", bundle.Runtime.Id);
+        Assert.Equal("network-default", bundle.Network.Id);
     }
 
     [Fact]
@@ -31,6 +33,8 @@ public sealed class ConfigValidationTests
             bundle.Match.Id,
             bundle.Economy.Id,
             bundle.Catalog.Id,
+            bundle.Runtime.Id,
+            bundle.Network.Id,
         }.Concat(allItems.Select(item => item.Id)).ToArray();
 
         var allNames = new[]
@@ -38,6 +42,8 @@ public sealed class ConfigValidationTests
             bundle.Match.Name,
             bundle.Economy.Name,
             bundle.Catalog.Name,
+            bundle.Runtime.Name,
+            bundle.Network.Name,
         }.Concat(allItems.Select(item => item.Name)).ToArray();
 
         Assert.Equal(allIds.Length, allIds.Distinct(StringComparer.Ordinal).Count());
@@ -69,5 +75,59 @@ public sealed class ConfigValidationTests
                 economyConfig.LossBonusSequence[index] >= economyConfig.LossBonusSequence[index - 1],
                 "Loss bonus sequence must be non-decreasing.");
         }
+    }
+
+    [Fact]
+    public void Catalog_cost_side_and_slot_rules_are_valid()
+    {
+        var catalog = ConfigLoader.LoadBundle(Path.Combine(_repoRoot, "data", "config")).Catalog;
+
+        Assert.Equal(3, catalog.LoadoutRules.MaxUtilityTotal);
+        Assert.Equal(1, catalog.LoadoutRules.MaxSpecialEquipment);
+        Assert.Equal(1, catalog.LoadoutRules.MaxDefuseKits);
+
+        foreach (var item in catalog.Weapons)
+        {
+            Assert.True(item.Cost >= 0);
+            Assert.Equal("Both", item.Team);
+            Assert.Equal(1, item.MaxPerLoadout);
+        }
+
+        foreach (var item in catalog.Utilities)
+        {
+            Assert.True(item.Cost >= 0);
+            Assert.Equal("Both", item.Team);
+            Assert.True(item.MaxPerLoadout <= catalog.LoadoutRules.MaxUtilityTotal);
+        }
+
+        foreach (var item in catalog.Equipment)
+        {
+            Assert.True(item.Cost >= 0);
+
+            if (item.ItemType is "DefenderEquipment" or "DefuseKit")
+            {
+                Assert.Equal("Defenders", item.Team);
+            }
+            else
+            {
+                Assert.Equal("Both", item.Team);
+            }
+        }
+    }
+
+    [Fact]
+    public void Runtime_and_network_contracts_are_valid()
+    {
+        var bundle = ConfigLoader.LoadBundle(Path.Combine(_repoRoot, "data", "config"));
+        var remoteNames = bundle.Network.Events
+            .Select(remote => remote.Name)
+            .Concat(bundle.Network.Functions.Select(remote => remote.Name))
+            .ToArray();
+
+        Assert.True(bundle.Runtime.FeatureFlags.PublishRuntimeDebugAttributes);
+        Assert.True(bundle.Runtime.FeatureFlags.CreateNetworkRemotesOnBoot);
+        Assert.True(bundle.Runtime.FeatureFlags.EnforceServiceContracts);
+        Assert.Equal("NukeAssaltRemotes", bundle.Network.RemoteRootName);
+        Assert.Equal(remoteNames.Length, remoteNames.Distinct(StringComparer.Ordinal).Count());
     }
 }

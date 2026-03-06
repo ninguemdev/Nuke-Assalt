@@ -1,48 +1,74 @@
 {
   "id": "catalog-beta-skeleton",
   "name": "BetaCatalogSkeleton",
+  "loadoutRules": {
+    "maxUtilityTotal": 3,
+    "maxSpecialEquipment": 1,
+    "maxPrimaryWeapons": 1,
+    "maxSecondaryWeapons": 1,
+    "maxArmor": 1,
+    "maxDefuseKits": 1
+  },
   "weapons": [
     {
       "id": "weapon-p1",
       "name": "P1",
       "itemType": "SecondaryWeapon",
+      "slot": "SecondaryWeapon",
       "team": "Both",
-      "cost": 0
+      "cost": 0,
+      "economyClass": "Pistol",
+      "maxPerLoadout": 1
     },
     {
       "id": "weapon-p2",
       "name": "P2",
       "itemType": "SecondaryWeapon",
+      "slot": "SecondaryWeapon",
       "team": "Both",
-      "cost": 500
+      "cost": 500,
+      "economyClass": "Pistol",
+      "maxPerLoadout": 1
     },
     {
       "id": "weapon-smg9",
       "name": "SMG-9",
       "itemType": "PrimaryWeapon",
+      "slot": "PrimaryWeapon",
       "team": "Both",
-      "cost": 1200
+      "cost": 1200,
+      "economyClass": "Smg",
+      "maxPerLoadout": 1
     },
     {
       "id": "weapon-rifle-a",
       "name": "Rifle-A",
       "itemType": "PrimaryWeapon",
+      "slot": "PrimaryWeapon",
       "team": "Both",
-      "cost": 2700
+      "cost": 2700,
+      "economyClass": "Rifle",
+      "maxPerLoadout": 1
     },
     {
       "id": "weapon-rifle-b",
       "name": "Rifle-B",
       "itemType": "PrimaryWeapon",
+      "slot": "PrimaryWeapon",
       "team": "Both",
-      "cost": 3100
+      "cost": 3100,
+      "economyClass": "Rifle",
+      "maxPerLoadout": 1
     },
     {
       "id": "weapon-sr1",
       "name": "SR-1 Sniper",
       "itemType": "PrimaryWeapon",
+      "slot": "PrimaryWeapon",
       "team": "Both",
-      "cost": 4500
+      "cost": 4500,
+      "economyClass": "Sniper",
+      "maxPerLoadout": 1
     }
   ],
   "utilities": [
@@ -50,32 +76,40 @@
       "id": "utility-smoke",
       "name": "Smoke",
       "itemType": "Utility",
+      "slot": "Utility",
       "team": "Both",
       "cost": 300,
+      "economyClass": "Utility",
       "maxPerLoadout": 1
     },
     {
       "id": "utility-flashbang",
       "name": "Flashbang",
       "itemType": "Utility",
+      "slot": "Utility",
       "team": "Both",
       "cost": 250,
+      "economyClass": "Utility",
       "maxPerLoadout": 2
     },
     {
       "id": "utility-he",
       "name": "HE Grenade",
       "itemType": "Utility",
+      "slot": "Utility",
       "team": "Both",
       "cost": 300,
+      "economyClass": "Utility",
       "maxPerLoadout": 1
     },
     {
       "id": "utility-incendiary",
       "name": "Incendiary",
       "itemType": "Utility",
+      "slot": "Utility",
       "team": "Both",
       "cost": 400,
+      "economyClass": "Utility",
       "maxPerLoadout": 1
     }
   ],
@@ -84,40 +118,50 @@
       "id": "armor-standard",
       "name": "Armor",
       "itemType": "Armor",
+      "slot": "Armor",
       "team": "Both",
       "cost": 1000,
+      "economyClass": "Armor",
       "maxPerLoadout": 1
     },
     {
       "id": "equipment-defuse-kit",
       "name": "Defuse Kit",
-      "itemType": "DefenderEquipment",
+      "itemType": "DefuseKit",
+      "slot": "DefuseKit",
       "team": "Defenders",
       "cost": 400,
+      "economyClass": "Support",
       "maxPerLoadout": 1
     },
     {
       "id": "equipment-fixed-camera",
       "name": "Fixed Camera",
       "itemType": "DefenderEquipment",
+      "slot": "SpecialEquipment",
       "team": "Defenders",
       "cost": 700,
+      "economyClass": "Support",
       "maxPerLoadout": 1
     },
     {
       "id": "equipment-metal-barricade",
       "name": "Metal Barricade",
       "itemType": "DefenderEquipment",
+      "slot": "SpecialEquipment",
       "team": "Defenders",
       "cost": 850,
+      "economyClass": "Support",
       "maxPerLoadout": 1
     },
     {
       "id": "equipment-land-mine",
       "name": "Land Mine",
       "itemType": "DefenderEquipment",
+      "slot": "SpecialEquipment",
       "team": "Defenders",
       "cost": 650,
+      "economyClass": "Support",
       "maxPerLoadout": 1
     }
   ]

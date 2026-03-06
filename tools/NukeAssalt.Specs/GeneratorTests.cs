@@ -27,6 +27,8 @@ public sealed class GeneratorTests
                     "CatalogConfig.luau",
                     "EconomyConfig.luau",
                     "MatchConfig.luau",
+                    "NetworkConfig.luau",
+                    "RuntimeConfig.luau",
                 },
                 generatedFileNames);
 

@@ -1,0 +1,73 @@
+using NukeAssalt.Tools.Config;
+
+namespace NukeAssalt.Specs;
+
+public sealed class ConfigValidationTests
+{
+    private readonly string _repoRoot = RepositoryRoot.Find();
+
+    [Fact]
+    public void Config_documents_deserialize_without_error()
+    {
+        var bundle = ConfigLoader.LoadBundle(Path.Combine(_repoRoot, "data", "config"));
+
+        Assert.Equal("match-default", bundle.Match.Id);
+        Assert.Equal("economy-default", bundle.Economy.Id);
+        Assert.Equal("catalog-beta-skeleton", bundle.Catalog.Id);
+    }
+
+    [Fact]
+    public void Config_ids_and_names_are_unique()
+    {
+        var bundle = ConfigLoader.LoadBundle(Path.Combine(_repoRoot, "data", "config"));
+
+        var allItems = bundle.Catalog.Weapons
+            .Concat(bundle.Catalog.Utilities)
+            .Concat(bundle.Catalog.Equipment)
+            .ToArray();
+
+        var allIds = new[]
+        {
+            bundle.Match.Id,
+            bundle.Economy.Id,
+            bundle.Catalog.Id,
+        }.Concat(allItems.Select(item => item.Id)).ToArray();
+
+        var allNames = new[]
+        {
+            bundle.Match.Name,
+            bundle.Economy.Name,
+            bundle.Catalog.Name,
+        }.Concat(allItems.Select(item => item.Name)).ToArray();
+
+        Assert.Equal(allIds.Length, allIds.Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(allNames.Length, allNames.Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [Fact]
+    public void Match_timers_and_format_are_valid()
+    {
+        var matchConfig = ConfigLoader.LoadBundle(Path.Combine(_repoRoot, "data", "config")).Match;
+
+        Assert.True(matchConfig.Timers.BuyPhaseSeconds < matchConfig.Timers.RoundSeconds);
+        Assert.True(matchConfig.Timers.PostPlantSeconds > 0);
+        Assert.Equal(8, matchConfig.Format.SwapAfterRounds);
+        Assert.Equal(9, matchConfig.Format.RoundsToWin);
+    }
+
+    [Fact]
+    public void Economy_values_are_valid()
+    {
+        var economyConfig = ConfigLoader.LoadBundle(Path.Combine(_repoRoot, "data", "config")).Economy;
+
+        Assert.Equal(800, economyConfig.StartingMoney);
+        Assert.Equal(new[] { 1400, 1900, 2400, 2900 }, economyConfig.LossBonusSequence);
+
+        for (var index = 1; index < economyConfig.LossBonusSequence.Count; index += 1)
+        {
+            Assert.True(
+                economyConfig.LossBonusSequence[index] >= economyConfig.LossBonusSequence[index - 1],
+                "Loss bonus sequence must be non-decreasing.");
+        }
+    }
+}

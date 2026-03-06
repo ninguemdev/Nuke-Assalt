@@ -1,0 +1,21 @@
+{
+  "id": "economy-default",
+  "name": "BetaEconomyDefaults",
+  "startingMoney": 800,
+  "winReward": 3250,
+  "lossBonusSequence": [
+    1400,
+    1900,
+    2400,
+    2900
+  ],
+  "plantReward": 800,
+  "defuseReward": 300,
+  "killRewards": {
+    "pistol": 300,
+    "rifle": 300,
+    "smg": 600,
+    "sniper": 150,
+    "utility": 300
+  }
+}

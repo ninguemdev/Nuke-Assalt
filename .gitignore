@@ -6,3 +6,9 @@
 /*.rbxl.lock
 
 sourcemap.json
+.dotnet/
+.nuget/
+TestResults/
+**/bin/
+**/obj/
+*.slnx

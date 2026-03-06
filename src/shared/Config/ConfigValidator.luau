@@ -8,6 +8,24 @@ local function assertPositiveNumber(value: any, label: string)
 	assert(type(value) == "number" and value > 0, string.format("%s must be a positive number", label))
 end
 
+local function assertNonNegativeNumber(value: any, label: string)
+	assert(type(value) == "number" and value >= 0, string.format("%s must be a non-negative number", label))
+end
+
+local function validateVector3(value: any, label: string)
+	assert(type(value) == "table", string.format("%s must be a table", label))
+	assert(type(value.x) == "number", string.format("%s.x must be a number", label))
+	assert(type(value.y) == "number", string.format("%s.y must be a number", label))
+	assert(type(value.z) == "number", string.format("%s.z must be a number", label))
+end
+
+local function validateColor3(value: any, label: string)
+	assert(type(value) == "table", string.format("%s must be a table", label))
+	assert(type(value.r) == "number" and value.r >= 0 and value.r <= 255, string.format("%s.r must be between 0 and 255", label))
+	assert(type(value.g) == "number" and value.g >= 0 and value.g <= 255, string.format("%s.g must be between 0 and 255", label))
+	assert(type(value.b) == "number" and value.b >= 0 and value.b <= 255, string.format("%s.b must be between 0 and 255", label))
+end
+
 local function validateCatalogItems(items: { any }, collectionName: string, seenIds: { [string]: boolean }, seenNames: { [string]: boolean })
 	for _, item in ipairs(items) do
 		assert(type(item) == "table", string.format("%s entries must be tables", collectionName))
@@ -37,12 +55,122 @@ local function validateRemoteDefinitions(collectionName: string, items: { any },
 	end
 end
 
+local function validateMapDefinitions(mapConfig: any)
+	assertNonEmptyString(mapConfig.id, "mapConfig.id")
+	assertNonEmptyString(mapConfig.name, "mapConfig.name")
+	assertNonEmptyString(mapConfig.theme, "mapConfig.theme")
+	assertNonEmptyString(mapConfig.workspaceModelName, "mapConfig.workspaceModelName")
+	assert(type(mapConfig.spawns) == "table", "mapConfig.spawns must be a table")
+	assert(type(mapConfig.callouts) == "table", "mapConfig.callouts must be a table")
+	assert(type(mapConfig.routes) == "table", "mapConfig.routes must be a table")
+	assert(type(mapConfig.bombsites) == "table", "mapConfig.bombsites must be a table")
+	assert(type(mapConfig.anchorPoints) == "table", "mapConfig.anchorPoints must be a table")
+	assert(type(mapConfig.geometry) == "table", "mapConfig.geometry must be a table")
+	assert(#mapConfig.bombsites >= 2, "mapConfig.bombsites must contain at least two bombsites")
+	assert(#mapConfig.geometry > 0, "mapConfig.geometry must not be empty")
+
+	local calloutIds = {}
+	local calloutNames = {}
+	local routeIds = {}
+	local bombsiteIds = {}
+	local spawnTeams = {}
+
+	for _, spawn in ipairs(mapConfig.spawns) do
+		assertNonEmptyString(spawn.id, "mapConfig.spawns.id")
+		assertNonEmptyString(spawn.name, "mapConfig.spawns.name")
+		assertNonEmptyString(spawn.team, "mapConfig.spawns.team")
+		validateVector3(spawn.position, "mapConfig.spawns.position")
+		spawnTeams[spawn.team] = true
+	end
+
+	assert(spawnTeams.Attackers, "mapConfig.spawns must include an Attackers spawn")
+	assert(spawnTeams.Defenders, "mapConfig.spawns must include a Defenders spawn")
+	assert(spawnTeams.Spectators, "mapConfig.spawns must include a Spectators spawn")
+
+	for _, callout in ipairs(mapConfig.callouts) do
+		assertNonEmptyString(callout.id, "mapConfig.callouts.id")
+		assertNonEmptyString(callout.name, "mapConfig.callouts.name")
+		validateVector3(callout.position, "mapConfig.callouts.position")
+		assert(not calloutIds[callout.id], string.format("Duplicate map callout id detected: %s", callout.id))
+		assert(not calloutNames[callout.name], string.format("Duplicate map callout name detected: %s", callout.name))
+		calloutIds[callout.id] = true
+		calloutNames[callout.name] = true
+	end
+
+	for _, route in ipairs(mapConfig.routes) do
+		assertNonEmptyString(route.id, "mapConfig.routes.id")
+		assertNonEmptyString(route.name, "mapConfig.routes.name")
+		assertNonEmptyString(route.fromCalloutId, "mapConfig.routes.fromCalloutId")
+		assertNonEmptyString(route.toCalloutId, "mapConfig.routes.toCalloutId")
+		assertNonEmptyString(route.siteId, "mapConfig.routes.siteId")
+		assert(calloutIds[route.fromCalloutId], string.format("Unknown route fromCalloutId: %s", route.fromCalloutId))
+		assert(calloutIds[route.toCalloutId], string.format("Unknown route toCalloutId: %s", route.toCalloutId))
+		assert(not routeIds[route.id], string.format("Duplicate map route id detected: %s", route.id))
+		routeIds[route.id] = true
+	end
+
+	for _, bombsite in ipairs(mapConfig.bombsites) do
+		assertNonEmptyString(bombsite.id, "mapConfig.bombsites.id")
+		assertNonEmptyString(bombsite.name, "mapConfig.bombsites.name")
+		assert(type(bombsite.calloutIds) == "table", "mapConfig.bombsites.calloutIds must be a table")
+		assert(type(bombsite.entryRouteIds) == "table", "mapConfig.bombsites.entryRouteIds must be a table")
+		assert(type(bombsite.plantZones) == "table", "mapConfig.bombsites.plantZones must be a table")
+		assert(#bombsite.entryRouteIds >= 2, string.format("Bombsite '%s' must expose at least two entry routes", bombsite.id))
+		assert(#bombsite.plantZones > 0, string.format("Bombsite '%s' must define at least one plant zone", bombsite.id))
+		bombsiteIds[bombsite.id] = true
+
+		for _, calloutId in ipairs(bombsite.calloutIds) do
+			assert(calloutIds[calloutId], string.format("Bombsite '%s' references unknown callout '%s'", bombsite.id, calloutId))
+		end
+
+		for _, routeId in ipairs(bombsite.entryRouteIds) do
+			assert(routeIds[routeId], string.format("Bombsite '%s' references unknown route '%s'", bombsite.id, routeId))
+		end
+
+		for _, plantZone in ipairs(bombsite.plantZones) do
+			assertNonEmptyString(plantZone.id, "mapConfig.bombsites.plantZones.id")
+			assertNonEmptyString(plantZone.name, "mapConfig.bombsites.plantZones.name")
+			validateVector3(plantZone.position, "mapConfig.bombsites.plantZones.position")
+			validateVector3(plantZone.size, "mapConfig.bombsites.plantZones.size")
+		end
+	end
+
+	for _, route in ipairs(mapConfig.routes) do
+		assert(route.siteId == "Mid" or bombsiteIds[route.siteId], string.format("Unknown route.siteId '%s'", route.siteId))
+	end
+
+	for _, anchorPoint in ipairs(mapConfig.anchorPoints) do
+		assertNonEmptyString(anchorPoint.id, "mapConfig.anchorPoints.id")
+		assertNonEmptyString(anchorPoint.name, "mapConfig.anchorPoints.name")
+		assertNonEmptyString(anchorPoint.anchorType, "mapConfig.anchorPoints.anchorType")
+		assertNonEmptyString(anchorPoint.siteId, "mapConfig.anchorPoints.siteId")
+		assertNonEmptyString(anchorPoint.calloutId, "mapConfig.anchorPoints.calloutId")
+		validateVector3(anchorPoint.position, "mapConfig.anchorPoints.position")
+		assert(type(anchorPoint.insidePlantZone) == "boolean", "mapConfig.anchorPoints.insidePlantZone must be a boolean")
+		assert(anchorPoint.siteId == "Mid" or bombsiteIds[anchorPoint.siteId], string.format("Unknown anchorPoint.siteId '%s'", anchorPoint.siteId))
+		assert(calloutIds[anchorPoint.calloutId], string.format("Unknown anchorPoint.calloutId '%s'", anchorPoint.calloutId))
+		assert(not anchorPoint.insidePlantZone, string.format("Anchor point '%s' must not be inside a plant zone", anchorPoint.id))
+	end
+
+	for _, geometry in ipairs(mapConfig.geometry) do
+		assertNonEmptyString(geometry.id, "mapConfig.geometry.id")
+		assertNonEmptyString(geometry.name, "mapConfig.geometry.name")
+		validateVector3(geometry.position, "mapConfig.geometry.position")
+		validateVector3(geometry.size, "mapConfig.geometry.size")
+		validateColor3(geometry.color, "mapConfig.geometry.color")
+		assertNonEmptyString(geometry.material, "mapConfig.geometry.material")
+		assertNonNegativeNumber(geometry.transparency, "mapConfig.geometry.transparency")
+		assert(type(geometry.canCollide) == "boolean", "mapConfig.geometry.canCollide must be a boolean")
+	end
+end
+
 local ConfigValidator = {}
 
-function ConfigValidator.Validate(matchConfig: any, economyConfig: any, catalogConfig: any, runtimeConfig: any, networkConfig: any)
+function ConfigValidator.Validate(matchConfig: any, economyConfig: any, catalogConfig: any, mapConfig: any, runtimeConfig: any, networkConfig: any)
 	assert(type(matchConfig) == "table", "Match config must be a table")
 	assert(type(economyConfig) == "table", "Economy config must be a table")
 	assert(type(catalogConfig) == "table", "Catalog config must be a table")
+	assert(type(mapConfig) == "table", "Map config must be a table")
 	assert(type(runtimeConfig) == "table", "Runtime config must be a table")
 	assert(type(networkConfig) == "table", "Network config must be a table")
 
@@ -86,6 +214,8 @@ function ConfigValidator.Validate(matchConfig: any, economyConfig: any, catalogC
 	assertPositiveNumber(catalogConfig.loadoutRules.maxArmor, "catalogConfig.loadoutRules.maxArmor")
 	assertPositiveNumber(catalogConfig.loadoutRules.maxDefuseKits, "catalogConfig.loadoutRules.maxDefuseKits")
 
+	validateMapDefinitions(mapConfig)
+
 	assertNonEmptyString(runtimeConfig.id, "runtimeConfig.id")
 	assertNonEmptyString(runtimeConfig.name, "runtimeConfig.name")
 	assert(type(runtimeConfig.featureFlags) == "table", "runtimeConfig.featureFlags must be a table")
@@ -108,6 +238,7 @@ function ConfigValidator.Validate(matchConfig: any, economyConfig: any, catalogC
 		[matchConfig.id] = true,
 		[economyConfig.id] = true,
 		[catalogConfig.id] = true,
+		[mapConfig.id] = true,
 		[runtimeConfig.id] = true,
 		[networkConfig.id] = true,
 	}
@@ -115,6 +246,7 @@ function ConfigValidator.Validate(matchConfig: any, economyConfig: any, catalogC
 		[matchConfig.name] = true,
 		[economyConfig.name] = true,
 		[catalogConfig.name] = true,
+		[mapConfig.name] = true,
 		[runtimeConfig.name] = true,
 		[networkConfig.name] = true,
 	}

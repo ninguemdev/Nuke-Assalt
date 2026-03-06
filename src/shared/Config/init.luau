@@ -6,6 +6,7 @@ local ConfigValidator = require(script.ConfigValidator)
 local matchConfig = DeepFreeze(require(script.Generated.MatchConfig))
 local economyConfig = DeepFreeze(require(script.Generated.EconomyConfig))
 local catalogConfig = DeepFreeze(require(script.Generated.CatalogConfig))
+local mapConfig = DeepFreeze(require(script.Generated.MapConfig))
 local runtimeConfig = DeepFreeze(require(script.Generated.RuntimeConfig))
 local networkConfig = DeepFreeze(require(script.Generated.NetworkConfig))
 
@@ -23,6 +24,10 @@ function Config.GetCatalogConfig()
 	return catalogConfig
 end
 
+function Config.GetMapConfig()
+	return mapConfig
+end
+
 function Config.GetRuntimeConfig()
 	return runtimeConfig
 end
@@ -32,7 +37,7 @@ function Config.GetNetworkConfig()
 end
 
 function Config.ValidateGeneratedConfigs()
-	return ConfigValidator.Validate(matchConfig, economyConfig, catalogConfig, runtimeConfig, networkConfig)
+	return ConfigValidator.Validate(matchConfig, economyConfig, catalogConfig, mapConfig, runtimeConfig, networkConfig)
 end
 
 Config.ValidateGeneratedConfigs()

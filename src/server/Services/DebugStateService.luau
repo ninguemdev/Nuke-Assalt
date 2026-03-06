@@ -37,7 +37,7 @@ function DebugStateService.new(configSnapshotService, serviceRegistry, remoteReg
 	return setmetatable(self, DebugStateService)
 end
 
-function DebugStateService:Publish(matchState: any?, roundState: any?)
+function DebugStateService:Publish(matchState: any?, roundState: any?, mapState: any?)
 	local snapshot = self._configSnapshotService:GetSnapshot()
 	local remoteFolder = self._remoteRegistryService:GetRemoteFolder()
 	local services = self._serviceRegistry:GetAll()
@@ -45,6 +45,7 @@ function DebugStateService:Publish(matchState: any?, roundState: any?)
 	self._runtimeFolder:SetAttribute("MatchConfigId", snapshot.match.id)
 	self._runtimeFolder:SetAttribute("EconomyConfigId", snapshot.economy.id)
 	self._runtimeFolder:SetAttribute("CatalogConfigId", snapshot.catalog.id)
+	self._runtimeFolder:SetAttribute("MapConfigId", snapshot.map.id)
 	self._runtimeFolder:SetAttribute("RuntimeConfigId", snapshot.runtime.id)
 	self._runtimeFolder:SetAttribute("NetworkConfigId", snapshot.network.id)
 	self._runtimeFolder:SetAttribute("NetworkVersion", snapshot.network.version)
@@ -67,6 +68,19 @@ function DebugStateService:Publish(matchState: any?, roundState: any?)
 	if roundState then
 		self._runtimeFolder:SetAttribute("RoundPhase", roundState.phase)
 		self._runtimeFolder:SetAttribute("RoundTimeRemaining", math.floor(roundState.timeRemaining))
+	end
+
+	if mapState then
+		self._runtimeFolder:SetAttribute("ActiveMapId", mapState.mapId)
+		self._runtimeFolder:SetAttribute("ActiveMapName", mapState.mapName)
+		self._runtimeFolder:SetAttribute("ActiveMapTheme", mapState.theme)
+		self._runtimeFolder:SetAttribute("ActiveMapRootName", mapState.workspaceModelName)
+		self._runtimeFolder:SetAttribute("MapSource", mapState.mapSource)
+		self._runtimeFolder:SetAttribute("MapCalloutCount", mapState.calloutCount)
+		self._runtimeFolder:SetAttribute("MapRouteCount", mapState.routeCount)
+		self._runtimeFolder:SetAttribute("MapBombsiteCount", mapState.bombsiteCount)
+		self._runtimeFolder:SetAttribute("MapAnchorPointCount", mapState.anchorPointCount)
+		self._runtimeFolder:SetAttribute("MapGeometryCount", mapState.geometryCount)
 	end
 end
 

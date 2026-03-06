@@ -19,6 +19,7 @@ public static class ConfigLoader
             LoadDocument<MatchConfigDocument>(Path.Combine(fullInputRoot, "match.json")),
             LoadDocument<EconomyConfigDocument>(Path.Combine(fullInputRoot, "economy.json")),
             LoadDocument<CatalogConfigDocument>(Path.Combine(fullInputRoot, "catalog.json")),
+            LoadDocument<MapConfigDocument>(Path.Combine(fullInputRoot, "map.json")),
             LoadDocument<RuntimeConfigDocument>(Path.Combine(fullInputRoot, "runtime.json")),
             LoadDocument<NetworkConfigDocument>(Path.Combine(fullInputRoot, "network.json")));
     }

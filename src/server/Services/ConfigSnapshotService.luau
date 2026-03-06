@@ -12,6 +12,7 @@ function ConfigSnapshotService.new()
 			match = Config.GetMatchConfig(),
 			economy = Config.GetEconomyConfig(),
 			catalog = Config.GetCatalogConfig(),
+			map = Config.GetMapConfig(),
 			runtime = Config.GetRuntimeConfig(),
 			network = Config.GetNetworkConfig(),
 		},

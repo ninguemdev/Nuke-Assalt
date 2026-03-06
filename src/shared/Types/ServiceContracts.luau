@@ -14,6 +14,21 @@ local ServiceContracts = {
 		name = "RemoteRegistryService",
 		methods = { "GetRemoteFolder", "GetDefinitions" },
 	},
+	MapService = {
+		name = "MapService",
+		methods = {
+			"GetConfig",
+			"EnsureMapWorkspace",
+			"GetMapRoot",
+			"GetSpawnPart",
+			"GetCalloutMarker",
+			"GetRouteMarkers",
+			"GetBombsiteRoot",
+			"GetPlantZones",
+			"GetAnchorPoints",
+			"GetStateSnapshot",
+		},
+	},
 	MatchService = {
 		name = "MatchService",
 		methods = { "GetConfig", "GetStateSnapshot" },

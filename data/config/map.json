@@ -1,0 +1,607 @@
+{
+  "id": "silo-7-greybox",
+  "name": "Silo-7",
+  "theme": "NuclearIndustrial",
+  "workspaceModelName": "Silo7Greybox",
+  "spawns": [
+    {
+      "id": "spawn-lobby",
+      "name": "Lobby Spawn",
+      "team": "Spectators",
+      "position": {
+        "x": 0,
+        "y": 4,
+        "z": 180
+      }
+    },
+    {
+      "id": "spawn-attackers",
+      "name": "Attacker Spawn",
+      "team": "Attackers",
+      "position": {
+        "x": 0,
+        "y": 4,
+        "z": 140
+      }
+    },
+    {
+      "id": "spawn-defenders",
+      "name": "Defender Spawn",
+      "team": "Defenders",
+      "position": {
+        "x": 0,
+        "y": 4,
+        "z": -140
+      }
+    }
+  ],
+  "callouts": [
+    {
+      "id": "attacker_spawn",
+      "name": "Attacker Spawn",
+      "position": {
+        "x": 0,
+        "y": 4,
+        "z": 140
+      }
+    },
+    {
+      "id": "a_main",
+      "name": "A Main",
+      "position": {
+        "x": -90,
+        "y": 4,
+        "z": 90
+      }
+    },
+    {
+      "id": "mid_pipe",
+      "name": "Mid Pipe",
+      "position": {
+        "x": 0,
+        "y": 4,
+        "z": 80
+      }
+    },
+    {
+      "id": "b_hall",
+      "name": "B Hall",
+      "position": {
+        "x": 90,
+        "y": 4,
+        "z": 90
+      }
+    },
+    {
+      "id": "a_rafters",
+      "name": "A Rafters",
+      "position": {
+        "x": -110,
+        "y": 4,
+        "z": 20
+      }
+    },
+    {
+      "id": "reactor",
+      "name": "Reactor",
+      "position": {
+        "x": -90,
+        "y": 4,
+        "z": -10
+      }
+    },
+    {
+      "id": "mid_service",
+      "name": "Mid Service",
+      "position": {
+        "x": 0,
+        "y": 4,
+        "z": 20
+      }
+    },
+    {
+      "id": "vent_connect",
+      "name": "Vent Connect",
+      "position": {
+        "x": 35,
+        "y": 4,
+        "z": -10
+      }
+    },
+    {
+      "id": "b_control",
+      "name": "B Control",
+      "position": {
+        "x": 90,
+        "y": 4,
+        "z": -10
+      }
+    },
+    {
+      "id": "reactor_back",
+      "name": "Reactor Back",
+      "position": {
+        "x": -110,
+        "y": 4,
+        "z": -35
+      }
+    },
+    {
+      "id": "b_backsite",
+      "name": "B Backsite",
+      "position": {
+        "x": 110,
+        "y": 4,
+        "z": -35
+      }
+    },
+    {
+      "id": "defender_spawn",
+      "name": "Defender Spawn",
+      "position": {
+        "x": 0,
+        "y": 4,
+        "z": -140
+      }
+    }
+  ],
+  "routes": [
+    {
+      "id": "route-a-main",
+      "name": "Route A Main",
+      "fromCalloutId": "attacker_spawn",
+      "toCalloutId": "a_main",
+      "siteId": "A"
+    },
+    {
+      "id": "route-mid-service",
+      "name": "Route Mid Service",
+      "fromCalloutId": "attacker_spawn",
+      "toCalloutId": "mid_service",
+      "siteId": "Mid"
+    },
+    {
+      "id": "route-b-hall",
+      "name": "Route B Hall",
+      "fromCalloutId": "attacker_spawn",
+      "toCalloutId": "b_hall",
+      "siteId": "B"
+    },
+    {
+      "id": "route-a-split",
+      "name": "Route A Split",
+      "fromCalloutId": "mid_service",
+      "toCalloutId": "reactor",
+      "siteId": "A"
+    },
+    {
+      "id": "route-b-split",
+      "name": "Route B Split",
+      "fromCalloutId": "vent_connect",
+      "toCalloutId": "b_control",
+      "siteId": "B"
+    },
+    {
+      "id": "route-defender-a-retake",
+      "name": "Route Defender A Retake",
+      "fromCalloutId": "defender_spawn",
+      "toCalloutId": "reactor_back",
+      "siteId": "A"
+    },
+    {
+      "id": "route-defender-b-retake",
+      "name": "Route Defender B Retake",
+      "fromCalloutId": "defender_spawn",
+      "toCalloutId": "b_backsite",
+      "siteId": "B"
+    }
+  ],
+  "bombsites": [
+    {
+      "id": "A",
+      "name": "Reactor Chamber",
+      "calloutIds": [
+        "a_main",
+        "a_rafters",
+        "reactor",
+        "reactor_back"
+      ],
+      "entryRouteIds": [
+        "route-a-main",
+        "route-a-split"
+      ],
+      "plantZones": [
+        {
+          "id": "a-default",
+          "name": "A Default Plant",
+          "position": {
+            "x": -92,
+            "y": 4.25,
+            "z": -4
+          },
+          "size": {
+            "x": 18,
+            "y": 0.5,
+            "z": 18
+          }
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "name": "Control Hub",
+      "calloutIds": [
+        "b_hall",
+        "vent_connect",
+        "b_control",
+        "b_backsite"
+      ],
+      "entryRouteIds": [
+        "route-b-hall",
+        "route-b-split"
+      ],
+      "plantZones": [
+        {
+          "id": "b-default",
+          "name": "B Default Plant",
+          "position": {
+            "x": 92,
+            "y": 4.25,
+            "z": -4
+          },
+          "size": {
+            "x": 18,
+            "y": 0.5,
+            "z": 18
+          }
+        }
+      ]
+    }
+  ],
+  "anchorPoints": [
+    {
+      "id": "anchor-barricade-a-main",
+      "name": "Barricade A Main",
+      "anchorType": "Barricade",
+      "siteId": "A",
+      "calloutId": "a_main",
+      "position": {
+        "x": -90,
+        "y": 4,
+        "z": 60
+      },
+      "insidePlantZone": false
+    },
+    {
+      "id": "anchor-camera-mid-pipe",
+      "name": "Camera Mid Pipe",
+      "anchorType": "Camera",
+      "siteId": "Mid",
+      "calloutId": "mid_pipe",
+      "position": {
+        "x": 0,
+        "y": 10,
+        "z": 70
+      },
+      "insidePlantZone": false
+    },
+    {
+      "id": "anchor-mine-vent-connect",
+      "name": "Mine Vent Connect",
+      "anchorType": "Mine",
+      "siteId": "B",
+      "calloutId": "vent_connect",
+      "position": {
+        "x": 35,
+        "y": 4,
+        "z": 5
+      },
+      "insidePlantZone": false
+    },
+    {
+      "id": "anchor-barricade-b-hall",
+      "name": "Barricade B Hall",
+      "anchorType": "Barricade",
+      "siteId": "B",
+      "calloutId": "b_hall",
+      "position": {
+        "x": 90,
+        "y": 4,
+        "z": 60
+      },
+      "insidePlantZone": false
+    },
+    {
+      "id": "anchor-camera-b-control",
+      "name": "Camera B Control",
+      "anchorType": "Camera",
+      "siteId": "B",
+      "calloutId": "b_control",
+      "position": {
+        "x": 102,
+        "y": 10,
+        "z": -12
+      },
+      "insidePlantZone": false
+    },
+    {
+      "id": "anchor-mine-reactor-back",
+      "name": "Mine Reactor Back",
+      "anchorType": "Mine",
+      "siteId": "A",
+      "calloutId": "reactor_back",
+      "position": {
+        "x": -110,
+        "y": 4,
+        "z": -25
+      },
+      "insidePlantZone": false
+    }
+  ],
+  "geometry": [
+    {
+      "id": "geo-foundation",
+      "name": "Foundation",
+      "position": {
+        "x": 0,
+        "y": -1,
+        "z": 0
+      },
+      "size": {
+        "x": 300,
+        "y": 2,
+        "z": 380
+      },
+      "color": {
+        "r": 68,
+        "g": 72,
+        "b": 78
+      },
+      "material": "Concrete",
+      "transparency": 0,
+      "canCollide": true
+    },
+    {
+      "id": "geo-a-lane",
+      "name": "ALaneDeck",
+      "position": {
+        "x": -90,
+        "y": 2,
+        "z": 90
+      },
+      "size": {
+        "x": 70,
+        "y": 4,
+        "z": 100
+      },
+      "color": {
+        "r": 90,
+        "g": 98,
+        "b": 110
+      },
+      "material": "Metal",
+      "transparency": 0,
+      "canCollide": true
+    },
+    {
+      "id": "geo-mid-service",
+      "name": "MidServiceDeck",
+      "position": {
+        "x": 0,
+        "y": 2,
+        "z": 70
+      },
+      "size": {
+        "x": 56,
+        "y": 4,
+        "z": 140
+      },
+      "color": {
+        "r": 83,
+        "g": 93,
+        "b": 104
+      },
+      "material": "Metal",
+      "transparency": 0,
+      "canCollide": true
+    },
+    {
+      "id": "geo-b-lane",
+      "name": "BLaneDeck",
+      "position": {
+        "x": 90,
+        "y": 2,
+        "z": 90
+      },
+      "size": {
+        "x": 70,
+        "y": 4,
+        "z": 100
+      },
+      "color": {
+        "r": 90,
+        "g": 98,
+        "b": 110
+      },
+      "material": "Metal",
+      "transparency": 0,
+      "canCollide": true
+    },
+    {
+      "id": "geo-a-site-floor",
+      "name": "ASiteFloor",
+      "position": {
+        "x": -90,
+        "y": 2,
+        "z": -25
+      },
+      "size": {
+        "x": 86,
+        "y": 4,
+        "z": 50
+      },
+      "color": {
+        "r": 108,
+        "g": 113,
+        "b": 118
+      },
+      "material": "DiamondPlate",
+      "transparency": 0,
+      "canCollide": true
+    },
+    {
+      "id": "geo-b-site-floor",
+      "name": "BSiteFloor",
+      "position": {
+        "x": 90,
+        "y": 2,
+        "z": -25
+      },
+      "size": {
+        "x": 86,
+        "y": 4,
+        "z": 50
+      },
+      "color": {
+        "r": 108,
+        "g": 113,
+        "b": 118
+      },
+      "material": "DiamondPlate",
+      "transparency": 0,
+      "canCollide": true
+    },
+    {
+      "id": "geo-a-reactor-cover",
+      "name": "AReactorCover",
+      "position": {
+        "x": -90,
+        "y": 8,
+        "z": -8
+      },
+      "size": {
+        "x": 18,
+        "y": 12,
+        "z": 18
+      },
+      "color": {
+        "r": 169,
+        "g": 173,
+        "b": 180
+      },
+      "material": "Metal",
+      "transparency": 0,
+      "canCollide": true
+    },
+    {
+      "id": "geo-b-control-cover",
+      "name": "BControlCover",
+      "position": {
+        "x": 90,
+        "y": 8,
+        "z": -8
+      },
+      "size": {
+        "x": 18,
+        "y": 12,
+        "z": 18
+      },
+      "color": {
+        "r": 169,
+        "g": 173,
+        "b": 180
+      },
+      "material": "Metal",
+      "transparency": 0,
+      "canCollide": true
+    },
+    {
+      "id": "geo-mid-pillar",
+      "name": "MidPipeColumn",
+      "position": {
+        "x": 0,
+        "y": 10,
+        "z": 75
+      },
+      "size": {
+        "x": 12,
+        "y": 20,
+        "z": 12
+      },
+      "color": {
+        "r": 120,
+        "g": 126,
+        "b": 132
+      },
+      "material": "Metal",
+      "transparency": 0,
+      "canCollide": true
+    },
+    {
+      "id": "geo-center-divider",
+      "name": "CenterDivider",
+      "position": {
+        "x": 0,
+        "y": 10,
+        "z": -55
+      },
+      "size": {
+        "x": 28,
+        "y": 20,
+        "z": 70
+      },
+      "color": {
+        "r": 96,
+        "g": 100,
+        "b": 106
+      },
+      "material": "Concrete",
+      "transparency": 0,
+      "canCollide": true
+    },
+    {
+      "id": "geo-attacker-riser",
+      "name": "AttackerRiser",
+      "position": {
+        "x": 0,
+        "y": 2,
+        "z": 150
+      },
+      "size": {
+        "x": 80,
+        "y": 4,
+        "z": 20
+      },
+      "color": {
+        "r": 76,
+        "g": 84,
+        "b": 94
+      },
+      "material": "Metal",
+      "transparency": 0,
+      "canCollide": true
+    },
+    {
+      "id": "geo-defender-riser",
+      "name": "DefenderRiser",
+      "position": {
+        "x": 0,
+        "y": 2,
+        "z": -150
+      },
+      "size": {
+        "x": 80,
+        "y": 4,
+        "z": 20
+      },
+      "color": {
+        "r": 76,
+        "g": 84,
+        "b": 94
+      },
+      "material": "Metal",
+      "transparency": 0,
+      "canCollide": true
+    }
+  ]
+}

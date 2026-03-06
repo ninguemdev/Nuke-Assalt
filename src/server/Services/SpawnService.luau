@@ -36,23 +36,38 @@ local function ensureSpawn(folder: Folder, name: string, position: Vector3): Spa
 	return spawnLocation
 end
 
-function SpawnService.new()
+function SpawnService.new(mapService)
 	local self = {
 		Name = "SpawnService",
-		_spawnFolder = ensureFolder(Workspace, "NukeAssaltSpawns"),
-	}
-
-	self._spawns = {
-		Lobby = ensureSpawn(self._spawnFolder, "Lobby", Vector3.new(0, 4, -24)),
-		Attackers = ensureSpawn(self._spawnFolder, "Attackers", Vector3.new(-24, 4, 0)),
-		Defenders = ensureSpawn(self._spawnFolder, "Defenders", Vector3.new(24, 4, 0)),
+		_mapService = mapService,
+		_spawnFolder = nil :: Folder?,
+		_spawns = nil :: { [string]: SpawnLocation }?,
 	}
 
 	return setmetatable(self, SpawnService)
 end
 
+function SpawnService:_ensureFallbackSpawns()
+	if self._spawns ~= nil then
+		return
+	end
+
+	self._spawnFolder = ensureFolder(Workspace, "NukeAssaltSpawns")
+	self._spawns = {
+		Lobby = ensureSpawn(self._spawnFolder, "Lobby", Vector3.new(0, 4, -24)),
+		Attackers = ensureSpawn(self._spawnFolder, "Attackers", Vector3.new(-24, 4, 0)),
+		Defenders = ensureSpawn(self._spawnFolder, "Defenders", Vector3.new(24, 4, 0)),
+	}
+end
+
 function SpawnService:GetSpawnForTeam(teamName: string)
-	return self._spawns[teamName]
+	local mapSpawn = self._mapService and self._mapService:GetSpawnPart(teamName)
+	if mapSpawn then
+		return mapSpawn
+	end
+
+	self:_ensureFallbackSpawns()
+	return self._spawns and self._spawns[teamName]
 end
 
 function SpawnService:MoveCharacterToTeamSpawn(character: Model, teamName: string)
@@ -62,7 +77,9 @@ function SpawnService:MoveCharacterToTeamSpawn(character: Model, teamName: strin
 end
 
 function SpawnService:MoveCharacterToLobby(character: Model)
-	character:PivotTo(self._spawns.Lobby.CFrame + Vector3.new(0, 3, 0))
+	local lobbySpawn = self:GetSpawnForTeam("Spectators") or self:GetSpawnForTeam("Lobby")
+	assert(lobbySpawn ~= nil, "Missing lobby spawn location")
+	character:PivotTo(lobbySpawn.CFrame + Vector3.new(0, 3, 0))
 end
 
 return SpawnService

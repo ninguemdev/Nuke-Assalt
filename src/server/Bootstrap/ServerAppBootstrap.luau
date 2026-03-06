@@ -11,6 +11,7 @@ local EquipmentService = require(script.Parent.Parent.Services.EquipmentService)
 local InventoryService = require(script.Parent.Parent.Services.InventoryService)
 local MatchService = require(script.Parent.Parent.Services.MatchService)
 local MatchCoordinatorService = require(script.Parent.Parent.Services.MatchCoordinatorService)
+local MapService = require(script.Parent.Parent.Services.MapService)
 local ObjectiveService = require(script.Parent.Parent.Services.ObjectiveService)
 local RemoteRegistryService = require(script.Parent.Parent.Services.RemoteRegistryService)
 local RoundService = require(script.Parent.Parent.Services.RoundService)
@@ -31,6 +32,7 @@ function ServerAppBootstrap.StartServerApp()
 	local configSnapshotService = ConfigSnapshotService.new()
 	serviceRegistry:Register("ConfigSnapshotService", configSnapshotService)
 	local remoteRegistryService = serviceRegistry:Register("RemoteRegistryService", RemoteRegistryService.new())
+	local mapService = serviceRegistry:Register("MapService", MapService.new(configSnapshotService))
 	local matchService = serviceRegistry:Register("MatchService", MatchService.new(configSnapshotService))
 	local roundService = serviceRegistry:Register("RoundService", RoundService.new(configSnapshotService))
 	serviceRegistry:Register("EconomyService", EconomyService.new(configSnapshotService))
@@ -42,8 +44,9 @@ function ServerAppBootstrap.StartServerApp()
 	serviceRegistry:Register("EquipmentService", EquipmentService.new(configSnapshotService))
 	serviceRegistry:Register("StatsService", StatsService.new())
 	local debugStateService = serviceRegistry:Register("DebugStateService", DebugStateService.new(configSnapshotService, serviceRegistry, remoteRegistryService))
-	debugStateService:Publish()
-	local spawnService = SpawnService.new()
+	mapService:EnsureMapWorkspace()
+	debugStateService:Publish(nil, nil, mapService:GetStateSnapshot())
+	local spawnService = SpawnService.new(mapService)
 	local matchCoordinatorService = MatchCoordinatorService.new(matchService, roundService, spawnService, debugStateService, remoteRegistryService)
 	matchCoordinatorService:Start()
 
@@ -51,13 +54,19 @@ function ServerAppBootstrap.StartServerApp()
 	Logger.info(
 		"ServerBootstrap",
 		string.format(
-			"Loaded config bundle: match=%s economy=%s catalog=%s runtime=%s network=%s",
+			"Loaded config bundle: match=%s economy=%s catalog=%s map=%s runtime=%s network=%s",
 			snapshot.match.id,
 			snapshot.economy.id,
 			snapshot.catalog.id,
+			snapshot.map.id,
 			snapshot.runtime.id,
 			snapshot.network.id
 		)
+	)
+	local mapState = mapService:GetStateSnapshot()
+	Logger.info(
+		"ServerBootstrap",
+		string.format("Map workspace ready: %s (source=%s)", mapState.workspaceModelName, mapState.mapSource)
 	)
 	Logger.info("ServerBootstrap", "Match coordinator started")
 

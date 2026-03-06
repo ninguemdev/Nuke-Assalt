@@ -66,6 +66,88 @@ export type CatalogConfig = {
 	equipment: { CatalogItem },
 }
 
+export type MapVector3 = {
+	x: number,
+	y: number,
+	z: number,
+}
+
+export type MapColor3 = {
+	r: number,
+	g: number,
+	b: number,
+}
+
+export type MapSpawnDefinition = {
+	id: string,
+	name: string,
+	team: string,
+	position: MapVector3,
+}
+
+export type MapCalloutDefinition = {
+	id: string,
+	name: string,
+	position: MapVector3,
+}
+
+export type MapRouteDefinition = {
+	id: string,
+	name: string,
+	fromCalloutId: string,
+	toCalloutId: string,
+	siteId: string,
+}
+
+export type MapPlantZoneDefinition = {
+	id: string,
+	name: string,
+	position: MapVector3,
+	size: MapVector3,
+}
+
+export type MapBombsiteDefinition = {
+	id: string,
+	name: string,
+	calloutIds: { string },
+	entryRouteIds: { string },
+	plantZones: { MapPlantZoneDefinition },
+}
+
+export type MapAnchorPointDefinition = {
+	id: string,
+	name: string,
+	anchorType: string,
+	siteId: string,
+	calloutId: string,
+	position: MapVector3,
+	insidePlantZone: boolean,
+}
+
+export type MapGeometryDefinition = {
+	id: string,
+	name: string,
+	position: MapVector3,
+	size: MapVector3,
+	color: MapColor3,
+	material: string,
+	transparency: number,
+	canCollide: boolean,
+}
+
+export type MapConfig = {
+	id: string,
+	name: string,
+	theme: string,
+	workspaceModelName: string,
+	spawns: { MapSpawnDefinition },
+	callouts: { MapCalloutDefinition },
+	routes: { MapRouteDefinition },
+	bombsites: { MapBombsiteDefinition },
+	anchorPoints: { MapAnchorPointDefinition },
+	geometry: { MapGeometryDefinition },
+}
+
 export type RuntimeConfig = {
 	id: string,
 	name: string,

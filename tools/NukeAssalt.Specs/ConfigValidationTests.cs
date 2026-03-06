@@ -14,6 +14,7 @@ public sealed class ConfigValidationTests
         Assert.Equal("match-default", bundle.Match.Id);
         Assert.Equal("economy-default", bundle.Economy.Id);
         Assert.Equal("catalog-beta-skeleton", bundle.Catalog.Id);
+        Assert.Equal("silo-7-greybox", bundle.Map.Id);
         Assert.Equal("runtime-default", bundle.Runtime.Id);
         Assert.Equal("network-default", bundle.Network.Id);
     }
@@ -33,6 +34,7 @@ public sealed class ConfigValidationTests
             bundle.Match.Id,
             bundle.Economy.Id,
             bundle.Catalog.Id,
+            bundle.Map.Id,
             bundle.Runtime.Id,
             bundle.Network.Id,
         }.Concat(allItems.Select(item => item.Id)).ToArray();
@@ -42,6 +44,7 @@ public sealed class ConfigValidationTests
             bundle.Match.Name,
             bundle.Economy.Name,
             bundle.Catalog.Name,
+            bundle.Map.Name,
             bundle.Runtime.Name,
             bundle.Network.Name,
         }.Concat(allItems.Select(item => item.Name)).ToArray();

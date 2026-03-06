@@ -4,6 +4,7 @@ public sealed record ConfigBundle(
     MatchConfigDocument Match,
     EconomyConfigDocument Economy,
     CatalogConfigDocument Catalog,
+    MapConfigDocument Map,
     RuntimeConfigDocument Runtime,
     NetworkConfigDocument Network);
 
@@ -116,3 +117,75 @@ public sealed record RemoteDefinition(
     string Name,
     string Channel,
     string Scope);
+
+public sealed record MapConfigDocument(
+    string Id,
+    string Name,
+    string Theme,
+    string WorkspaceModelName,
+    IReadOnlyList<MapSpawnDefinition> Spawns,
+    IReadOnlyList<MapCalloutDefinition> Callouts,
+    IReadOnlyList<MapRouteDefinition> Routes,
+    IReadOnlyList<MapBombsiteDefinition> Bombsites,
+    IReadOnlyList<MapAnchorPointDefinition> AnchorPoints,
+    IReadOnlyList<MapGeometryDefinition> Geometry);
+
+public sealed record MapVector3(
+    double X,
+    double Y,
+    double Z);
+
+public sealed record MapColor3(
+    int R,
+    int G,
+    int B);
+
+public sealed record MapSpawnDefinition(
+    string Id,
+    string Name,
+    string Team,
+    MapVector3 Position);
+
+public sealed record MapCalloutDefinition(
+    string Id,
+    string Name,
+    MapVector3 Position);
+
+public sealed record MapRouteDefinition(
+    string Id,
+    string Name,
+    string FromCalloutId,
+    string ToCalloutId,
+    string SiteId);
+
+public sealed record MapPlantZoneDefinition(
+    string Id,
+    string Name,
+    MapVector3 Position,
+    MapVector3 Size);
+
+public sealed record MapBombsiteDefinition(
+    string Id,
+    string Name,
+    IReadOnlyList<string> CalloutIds,
+    IReadOnlyList<string> EntryRouteIds,
+    IReadOnlyList<MapPlantZoneDefinition> PlantZones);
+
+public sealed record MapAnchorPointDefinition(
+    string Id,
+    string Name,
+    string AnchorType,
+    string SiteId,
+    string CalloutId,
+    MapVector3 Position,
+    bool InsidePlantZone);
+
+public sealed record MapGeometryDefinition(
+    string Id,
+    string Name,
+    MapVector3 Position,
+    MapVector3 Size,
+    MapColor3 Color,
+    string Material,
+    double Transparency,
+    bool CanCollide);

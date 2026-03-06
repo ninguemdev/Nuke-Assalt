@@ -243,6 +243,7 @@ Criar o mapa 1 em versao jogavel de greybox com bombsites, rotas e pontos valido
 - Construir a greybox com partes simples.
 - Ajustar colisao, cobertura, alturas e bloqueios.
 - Marcar sites, zonas e anchor points com nomes/atributos padronizados.
+- Se quiser authoring manual direto no Studio, usar um root com `NukeAssaltManualMap = true` e seguir `docs/STUDIO_MAP_AUTHORING.md`.
 - Testar leitura visual de rotas, line of sight e tempos de rotacao.
 
 ### Criterio de aceite
